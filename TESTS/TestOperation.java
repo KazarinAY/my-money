@@ -1,7 +1,9 @@
-package kazarin.my_money.model;
+package kazarin.my_money.TESTS;
 
 import org.junit.Test;
 import static org.junit.Assert.assertEquals;
+
+import kazarin.my_money.model.Operation;
 
 import java.math.BigDecimal;
 import java.io.ByteArrayOutputStream;
