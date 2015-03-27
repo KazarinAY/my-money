@@ -4,7 +4,9 @@ import org.junit.Test;
 import static org.junit.Assert.assertEquals;
 
 import kazarin.my_money.model.Operations;
+import kazarin.my_money.model.Operation;
 
+import java.math.BigDecimal;
 import java.io.ByteArrayOutputStream;
 import java.io.ByteArrayInputStream;
 import java.io.ObjectOutputStream;
@@ -16,7 +18,9 @@ public class TestOperations {
 	@Test
 	public void testSerialisation() 
 				throws IOException, ClassNotFoundException {
-		Operations ops = Operations.getInstance();
+		Operations ops = Operations.getInstance(); //TODO add
+		ops.add(new Operation(BigDecimal.valueOf(77.77d), 
+									"Test description", "tag1", "tag2") );
 		ByteArrayOutputStream baos = new ByteArrayOutputStream();
 		ObjectOutputStream oos = new ObjectOutputStream(baos);
 		oos.writeObject(ops);

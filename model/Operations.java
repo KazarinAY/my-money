@@ -31,22 +31,20 @@ public class Operations implements Serializable{
 	@Override
 	public int hashCode(){
 		int code = 0;
-		if (list != null) code += list.hashCode();		
+		if (list != null) code = list.hashCode();		
 		return code;
 	}
 
 	@Override
 	public boolean equals(Object obj){
-		if (obj == null) return false;
-		
-		if ( !(obj instanceof Operations) ) return false;
+		if (this == null) return false;
 
+		if (obj == null || getClass() != obj.getClass()) return false;	
+		
 		Operations ops = (Operations) obj;
 
-		if (this.hashCode() != ops.hashCode()) return false;
+		if (list != null ? !list.equals(ops.getList()) : ops.getList() != null) return false;
 
-		if (this.list.equals(ops.getList())) return true;
-
-		return false;
+		return true;
 	}
 }

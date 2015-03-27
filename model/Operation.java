@@ -12,6 +12,9 @@ import java.util.HashSet;
 public class Operation implements Serializable{
 	private static final long serialVersionUID = 1L;
 
+	private static int ids = 0;
+
+	private int id;
 	private BigDecimal howMuch;
 	private Date date;
 	private Set<String> tags;
@@ -19,6 +22,8 @@ public class Operation implements Serializable{
 
 	public Operation(BigDecimal howMuch, Date date, 
 					 String description, String... tags){
+		ids++;
+		id++;
 		this.howMuch = howMuch;
 		this.date = date;
 		this.description = description;
@@ -32,6 +37,8 @@ public class Operation implements Serializable{
 
 	public Operation(BigDecimal howMuch, 
 					 String description, String... tags){
+		ids++;
+		id++;
 		this.howMuch = howMuch;
 		this.date = new Date();
 		this.description = description;
@@ -41,6 +48,10 @@ public class Operation implements Serializable{
 				this.tags.add(tag);				
 			}
 		}
+	}
+
+	public int getId(){
+		return id;
 	}
 
 	public BigDecimal getHowMuch(){
@@ -77,28 +88,30 @@ public class Operation implements Serializable{
 	
 	@Override
 	public int hashCode(){
-		int code = 0;
-		if (howMuch != null) code += howMuch.hashCode();
-		if (date != null) code += date.hashCode();
+		int code = id;
+		code = 31*code + (howMuch != null ? howMuch.hashCode() : 0);
+		code = 31*code + (date != null ? date.hashCode() : 0);		
 		return code;
 	}
 
 	@Override
 	public boolean equals(Object obj){
-		if (obj == null) return false;
+		if (this == null) return false;
 		
-		if ( !(obj instanceof Operation) ) return false;
+		if ( obj == null || getClass() != obj.getClass() ) return false;
 
 		Operation op = (Operation) obj;
 
-		if (this.hashCode() != op.hashCode()) return false;
-
-		if (this.howMuch.equals(op.getHowMuch()) &&
-			this.date.equals(op.getDate()) &&
-			this.tags.equals(op.getTags()) &&
-			this.description.equals(op.getDescription()) ) return true;
-
-		return false;
+		if (id != op.getId()) return false;
+		if (howMuch != null ? !howMuch.equals(op.getHowMuch()) : 
+							 	op.getHowMuch() != null) return false;
+		if (date != null ? !date.equals(op.getDate()) : 
+							  op.getDate() != null) return false;
+		if (tags != null ? !tags.equals(op.getTags()) :
+							op.getTags() != null) return false;
+		if (description != null ? !description.equals(op.getDescription()) : 
+							  		op.getDescription() != null) return false;
+		return true;
 	}
 	/**
 	 * Thrown when an application tries to call operation 
