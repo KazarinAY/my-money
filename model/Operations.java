@@ -13,6 +13,12 @@ public class Operations implements Serializable{
 		list = new ArrayList<>();
 	}
 
+	public void showAllList(){
+		for (Operation el : list){
+			System.out.println(el);
+		}
+	}
+
 	public static Operations getInstance(){
 		if (instance == null) {
 			instance = new Operations();

@@ -18,7 +18,7 @@ public class TestOperations {
 	@Test
 	public void testSerialisation() 
 				throws IOException, ClassNotFoundException {
-		Operations ops = Operations.getInstance(); //TODO add
+		Operations ops = Operations.getInstance(); 
 		ops.add(new Operation(BigDecimal.valueOf(77.77d), 
 									"Test description", "tag1", "tag2") );
 		ByteArrayOutputStream baos = new ByteArrayOutputStream();

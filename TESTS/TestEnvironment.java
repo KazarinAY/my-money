@@ -9,7 +9,7 @@ import kazarin.my_money.model.Environment;
 public class TestEnvironment {	
 	@Test
 	public void testLoadAndSave(){
-		Environment env = Environment.getInstance();
+		Environment env = Environment.getInstance(true);
 		Operations ops = env.load();
 		env.save();
 	}
