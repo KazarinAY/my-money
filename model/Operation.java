@@ -37,17 +37,7 @@ public class Operation implements Serializable{
 
 	public Operation(BigDecimal howMuch, 
 					 String description, String... tags){
-		ids++;
-		id++;
-		this.howMuch = howMuch;
-		this.date = new Date();
-		this.description = description;
-		this.tags = new HashSet<>();
-		if (tags != null){
-			for (String tag : tags){
-				this.tags.add(tag);				
-			}
-		}
+		this(howMuch, new Date(), description, tags);
 	}
 
 	public int getId(){
