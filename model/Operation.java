@@ -1,16 +1,18 @@
 package kazarin.my_money.model;
 
 import java.util.Date;
+import java.text.SimpleDateFormat;
+import java.util.Locale;
 import java.util.Set;
+import java.util.HashSet;
 import java.math.BigDecimal;
 import java.io.Serializable;
-import java.util.HashSet;
 
 /**
  * Operation
 */
 public class Operation implements Serializable{
-	private static final long serialVersionUID = 1L;
+	private static final long serialVersionUID = 3L;
 
 	private static int ids = 0;
 
@@ -71,8 +73,8 @@ public class Operation implements Serializable{
 		}
 		String descriptionStr = "";
 		if (description != null){ descriptionStr = description; }
-
-		return howMuch.toString() + " руб " + date.toString() + " " 
+		SimpleDateFormat dateFormat = new SimpleDateFormat("dd-MM-yyyy", Locale.ENGLISH);
+		return id + ": " + howMuch.toString() + " руб " + dateFormat.format(date) + " " 
 				+ descriptionStr + " тэги: " + tagsStr;
 	}
 	

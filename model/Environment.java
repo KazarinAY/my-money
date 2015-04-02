@@ -8,78 +8,50 @@ import java.io.FileOutputStream;
 import java.io.ObjectOutputStream;
 import java.io.ObjectInputStream;
 import java.io.IOException;
-import java.util.Properties;
-import java.io.BufferedWriter;
-import java.io.FileWriter;
-import java.io.FileNotFoundException;
 
 public class Environment{
 	private static Environment instance;
 
 	private Path dataDir;
-	private String deafultFileName = "data";
-	private String testFileName = "test";
-	private Properties properties;		
 	private Path dataFile;
 
-	private Environment(boolean isTest){
-		//System.out.println("\nnew Environment()");
+	private Environment(){
+		
 		String directory = System.getProperty("user.home") + "/mymoney";
 		dataDir = Paths.get(directory);	
-		//System.out.println("dataDir = " + dataDir);
-		if (!Files.exists(dataDir)){
-			createAllFiles();
-		}
-		properties = new Properties();		
 		
-		if (!isTest) loadProperties(deafultFileName);
-		else loadProperties(testFileName);		
-
-		String fileName = properties.getProperty("data file");
-		//System.out.println("fileName = " + fileName);
-		if (fileName != null){			
-			dataFile = Paths.get(directory + "/" + fileName);
-		} else {
-			System.err.println("Failed to get property"); 
-		}
-		//System.out.println("dataFile = " + dataFile + "\n");
-	}
-
-	private void loadProperties(String fileName){
-		String fileNamePath = dataDir.toString() + 
-										"/" + fileName + ".properties";
-		try (FileInputStream fis = new FileInputStream(fileNamePath)){
-			properties.load(fis);
-		} catch (FileNotFoundException fnfe){
-			System.err.println("ERROR: failed to find properties file!");
-		} catch (IOException ioe){
-			System.err.println("ERROR: failed to load properties from file!");
-		}
-	}
+		if (!Files.exists(dataDir)){
+			createDirectories();
+		}	
+		dataFile = Paths.get( directory + "/data");		
+	}	
 	
-	public static Environment getInstance(boolean isTest){
+	public static Environment getInstance(){
 		if (instance == null) {
-			instance = new Environment(isTest);
+			instance = new Environment();
 		}
 		return instance;
 	}
 
 	public Operations load(){
-		Operations ops = null;
+		Operations ops = Operations.getInstance();
 		if (Files.exists(dataFile)){
+			System.out.println("LOG Operations.load(): dataFile.toString() = " + dataFile.toString());
 			try (FileInputStream fis = new FileInputStream(dataFile.toString());
 				 ObjectInputStream ois = new ObjectInputStream(fis);){
-
-				ops = (Operations) ois.readObject();
+				System.out.println("LOG Operations.load(), from dataFile: ois = " + ois);
+				ops.readExternal(ois);	
+				System.out.println("LOG Operations.load(), from dataFile: ops = " + ops);							
 			} catch (ClassNotFoundException cnfe){
-
+				System.err.println("Load ClassNotFoundException");
 			} catch(IOException ioe){
-
+				System.err.println("Load IOException");
 			}			
 		} else {
 			createDataFile();
 			ops = Operations.getInstance();			
 		}	
+		System.out.println("LOG Operations.load(): ops = " + ops);
 		return ops;
 	}
 	
@@ -87,14 +59,16 @@ public class Environment{
 		if (Files.exists(dataFile)){
 			try (FileOutputStream fos = new FileOutputStream(dataFile.toString());
 				 ObjectOutputStream oos = new ObjectOutputStream(fos);){
-
-				oos.writeObject(Operations.getInstance());
+				System.out.println("LOG Operations.save(): Operations.getInstance() = " + 
+									Operations.getInstance());
+				Operations ops = Operations.getInstance(); 
+				ops.writeExternal(oos);
 			} catch(IOException e){
-
+				System.err.println("Save IOException");
 			}
 		} else {			
 			createDataFile();
-			save(); 				// recursive calling
+			save(); 			// recursive calling
 			
 		}	
 	}	
@@ -107,38 +81,11 @@ public class Environment{
 		}
 	}
 
-	private void createAllFiles(){
-		createDirectories();
-		createPropertyFile(deafultFileName);
-		createPropertyFile(testFileName);		
-	}	
-
 	private void createDirectories(){
 		try{
 			Files.createDirectories(dataDir);	
 		} catch (IOException e){
 			System.err.println("ERROR: failed to create data directories!");
-		}
-	}
-
-	private void createPropertyFile(String type){
-		String fileName = "";
-		try {
-			fileName = dataDir.toString() + "/" + type + ".properties";
-			Path path = Paths.get(fileName);	
-			Files.createFile(path);
-		} catch (IOException e){
-			System.err.println("ERROR: failed to create properties file!");
-			return;
-		}
-		
-		try (FileWriter fw = new FileWriter(fileName)){
-			Properties pr = new Properties();
-			pr.setProperty("data file", type);
-			pr.store(fw, "Where data file is");
-		} catch (IOException e){
-			System.err.println("ERROR: failed to write to properties file!");
-			return;
 		}
 	}	
 }

@@ -1,4 +1,4 @@
 # My Money
 Simple accounting.
 
-P.S. It's my first indy project - don't judge strictly))
+It's my first indy project - don't judge me strictly. :)

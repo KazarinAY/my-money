@@ -19,18 +19,19 @@ public class TestOperations {
 	public void testSerialisation() 
 				throws IOException, ClassNotFoundException {
 		Operations ops = Operations.getInstance(); 
-		ops.add(new Operation(BigDecimal.valueOf(77.77d), 
-									"Test description", "tag1", "tag2") );
+		//String = opStr = "add +500 : 21-03-2015"
+		//ops.add(opStr);
 		ByteArrayOutputStream baos = new ByteArrayOutputStream();
 		ObjectOutputStream oos = new ObjectOutputStream(baos);
-		oos.writeObject(ops);
+		ops.writeExternal(oos);
 		baos.close(); oos.close();
 
 		ByteArrayInputStream bais = new ByteArrayInputStream(baos.toByteArray());
 		ObjectInputStream ois = new ObjectInputStream(bais);
-		Operations opsLoaded = (Operations) ois.readObject();		
+		Operations opsLoaded = Operations.getInstance();
+		opsLoaded.readExternal(ois);	
 		bais.close(); ois.close();
-		if (!ops.equals(opsLoaded)){
+		if (ops != opsLoaded){
 			throw new IOException("Bad serialisation"); //BAD EXCEPTION
 		}
 	}

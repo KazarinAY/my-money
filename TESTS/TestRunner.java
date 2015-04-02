@@ -12,19 +12,19 @@ public class TestRunner {
       for (Failure failure : resultOperation1.getFailures()) {
          System.out.println(failure.toString());
       }
-      System.out.println(resultOperation1.wasSuccessful());
+      System.out.println("TestOperation - " + resultOperation1.wasSuccessful());
 
       Result resultOperation2 = JUnitCore.runClasses(TestOperations.class);
       for (Failure failure : resultOperation2.getFailures()) {
          System.out.println(failure.toString());
       }
-      System.out.println(resultOperation2.wasSuccessful());
+      System.out.println("TestOperations - " + resultOperation2.wasSuccessful());
 
       Result resultOperation3 = JUnitCore.runClasses(TestEnvironment.class);
       for (Failure failure : resultOperation3.getFailures()) {
          System.out.println(failure.toString());
       }
-      System.out.println(resultOperation3.wasSuccessful());
+      System.out.println("TestEnvironment - " + resultOperation3.wasSuccessful());
 
       long finish = System.currentTimeMillis();
       System.out.println("Testing time = " + (finish - start) + "millis");
