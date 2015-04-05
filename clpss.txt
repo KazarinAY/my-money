@@ -1,0 +1,1 @@
+export CLASSPATH=/home/bazzz/projects/my-money/classes:/home/bazzz/projects/my-money/classes/hamcrest-all-1.3.jar:/home/bazzz/projects/my-money/classes/junit-4.12.jar
