@@ -25,7 +25,7 @@ public class Operation implements Serializable{
 	public Operation(BigDecimal howMuch, Date date, 
 					 String description, String... tags){
 		ids++;
-		id++;
+		this.id = ids;
 		this.howMuch = howMuch;
 		this.date = date;
 		this.description = description;
@@ -40,6 +40,13 @@ public class Operation implements Serializable{
 	public Operation(BigDecimal howMuch, 
 					 String description, String... tags){
 		this(howMuch, new Date(), description, tags);
+	}
+
+	public static int getIds(){
+		return ids;
+	}
+	public static void setIds(int newIds){
+		ids = newIds;
 	}
 
 	public int getId(){
@@ -105,6 +112,7 @@ public class Operation implements Serializable{
 							  		op.getDescription() != null) return false;
 		return true;
 	}
+
 	/**
 	 * Thrown when an application tries to call operation 
 	 * that has null howMuch or date field

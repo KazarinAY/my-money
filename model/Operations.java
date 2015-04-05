@@ -13,6 +13,8 @@ import java.util.Set;
 import java.util.HashSet;
 import java.io.ObjectOutput;
 import java.io.ObjectInput;
+import java.lang.NumberFormatException;
+import java.util.Iterator;
 
 
 public class Operations implements Externalizable{
@@ -58,22 +60,18 @@ public class Operations implements Externalizable{
 		System.out.println("Balance = " + balance + ", total operations = " + list.size());
 	}	
 
-	public void add(String line) throws WrongCommandException{
-		System.out.println(line);
+	public void add(String line) throws WrongCommandException{		
 		BigDecimal summ = null;
 		Date date = null;
 		String description = "";
 		String[] tagsArr = null;		
 		String[] tokens = line.split(":");
-		try {
-			System.out.println(tokens[0]);
-			System.out.println(tokens[0].split(" ")[1]);
+		try {			
 			summ = new BigDecimal(tokens[0].split(" ")[1]);
 
 			if (summ == null){
 				throw new WrongCommandException();
-			}
-			System.out.println(summ);
+			}			
 			if (tokens.length > 1){
 				SimpleDateFormat dateFormat = new SimpleDateFormat("dd-MM-yyyy", Locale.ENGLISH);
 				System.out.println(tokens[1]);
@@ -93,13 +91,37 @@ public class Operations implements Externalizable{
 		}
 		if (date == null){
 			date = new Date();
-		}
-				
-		System.out.println("list: " + list.size());
-		list.add(new Operation(summ, date, description, tagsArr));
-		System.out.println("list: " + list.size());
+		}		
+		list.add(new Operation(summ, date, description, tagsArr));		
 	}
 
+	public void delete(String line) throws WrongCommandException{
+		try{
+			System.out.println(line.split(" ")[1]);
+			int id = Integer.parseInt(line.split(" ")[1]);
+			System.out.println("id = " + id + " ids = " + Operation.getIds());
+			if (id > Operation.getIds()){
+				throw new WrongCommandException();
+			}
+			Iterator iterator = list.iterator();
+			while(iterator.hasNext()){
+				Operation op = (Operation) iterator.next();
+				if (op.getId() == id){
+					iterator.remove();
+				}
+			}
+		} catch (NumberFormatException e){
+			throw new WrongCommandException();
+		}
+
+	}
+
+	public void change(String line){
+		System.out.println();
+
+	}
+
+	
 	public List getList(){
 		return list;
 	}
@@ -131,7 +153,12 @@ public class Operations implements Externalizable{
 
     @Override
     public void readExternal(ObjectInput in) throws IOException, ClassNotFoundException {
-        list = (List) in.readObject();        
+        list = (List) in.readObject();  
+        int max = 0;
+        for (Operation op : list){
+        	if (op.getId() > max)
+        		max = op.getId();
+        }
+        Operation.setIds(max);      
     }
-
 }
