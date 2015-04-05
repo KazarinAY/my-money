@@ -63,7 +63,7 @@ public class Operations implements Externalizable{
 		BigDecimal summ = null;
 		Date date = null;
 		String description = "";
-		Set<String> tags = new HashSet<>();
+		String[] tagsArr = null;		
 		String[] tokens = line.split(":");
 		try {
 			System.out.println(tokens[0]);
@@ -79,16 +79,22 @@ public class Operations implements Externalizable{
 				System.out.println(tokens[1]);
 				date = dateFormat.parse(tokens[1]);
 			}
+			if (tokens.length > 2){
+				String[] descAndTags = tokens[2].split("#");
+				if (descAndTags.length > 0)
+					description = descAndTags[0];
+				if (descAndTags.length > 1){
+					tagsArr = descAndTags[1].split(",");
+				}
+
+			}
 		} catch (Exception e){
 			throw new WrongCommandException();
 		}
 		if (date == null){
 			date = new Date();
 		}
-		String[] tagsArr = null;
-		if (tags.size() != 0){
-			tagsArr = (String[]) tags.toArray();
-		}		
+				
 		System.out.println("list: " + list.size());
 		list.add(new Operation(summ, date, description, tagsArr));
 		System.out.println("list: " + list.size());
