@@ -1,3 +1,3 @@
 #/bin/bash
 cd src
-java kazarin.my_money.Main
+java -cp ../classes kazarin.my_money.Main
