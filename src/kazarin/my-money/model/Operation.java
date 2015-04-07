@@ -69,6 +69,27 @@ public class Operation implements Serializable{
 		return description;
 	}
 
+	public void setHowMuch(BigDecimal howMuch){
+		this.howMuch = howMuch;
+	}
+
+	public void setDate(Date date){
+		this.date = date;
+	}
+
+	public void setTags(String[] tags){
+		this.tags.clear();
+		if (tags != null){
+			for (String tag : tags){
+				this.tags.add(tag);
+			}
+		}
+	}
+
+	public void setDescription(String description){
+		this.description = description;
+	}
+
 	@Override
 	public String toString(){
 		if (howMuch == null || date == null){

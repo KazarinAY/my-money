@@ -45,11 +45,13 @@ public class Main{
 									System.out.print("My Money, enter command:");
 									break;
 
-					case "change": 
+					case "change": 	try {
 										ops.change(line);
 										ops.printStatistic();
-									
-									System.out.print("My Money, enter command:");
+									} catch (WrongCommandException e){
+										System.out.println("Wrong command!");
+									}
+									System.out.print("My Money, enter command:");									
 									break;
 
 					default: 		System.out.println("Wrong command!");

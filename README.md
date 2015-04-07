@@ -10,11 +10,12 @@ It's my first indy project - don't judge me strictly. :)
 	my-money$ bash run.sh
 
 		Commands inside the programm:
-show - show list of all operations
+show - shows list of all operations
 
-add - add a new operation
+add - adds a new operation
 	example: add -200 : 06-04-2015 : description #booze
-del - delete an operation 
+del - deletes an operation 
 	example: del 8
+change - changes an operation by id
+	example: change 4:12-12-2014 # booze
 exit - to exit
-

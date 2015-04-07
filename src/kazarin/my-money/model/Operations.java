@@ -15,6 +15,8 @@ import java.io.ObjectOutput;
 import java.io.ObjectInput;
 import java.lang.NumberFormatException;
 import java.util.Iterator;
+import java.util.StringTokenizer;
+import java.text.ParseException;
 
 
 public class Operations implements Externalizable{
@@ -74,7 +76,6 @@ public class Operations implements Externalizable{
 			}			
 			if (tokens.length > 1){
 				SimpleDateFormat dateFormat = new SimpleDateFormat("dd-MM-yyyy", Locale.ENGLISH);
-				System.out.println(tokens[1]);
 				date = dateFormat.parse(tokens[1]);
 			}
 			if (tokens.length > 2){
@@ -116,12 +117,64 @@ public class Operations implements Externalizable{
 
 	}
 
-	public void change(String line){
-		System.out.println();
+	public void change(String line) throws WrongCommandException{
+		int id = 0;
+		BigDecimal newHowMatch = null;
+		Date newDate = null;
+		String newDescription = null;
+		String[] newTags = null;
+		line = line.substring(6);
+		System.out.println(line);
+		StringTokenizer st = new StringTokenizer(line, ":");
+		if (st.hasMoreTokens()){
+			id = Integer.parseInt(st.nextToken().trim());
+			while(st.hasMoreTokens()){
+				String token = st.nextToken();
+				if (token.contains("#")){
+					String[] tmp = token.split("#");
+					token = tmp[0];
+					newTags = tmp[1].split(",");
+				}
+				token = token.trim();
+				if (token.matches("\\d+(\\.0*)?")){
+					newHowMatch = new BigDecimal(token);
+				} else if (token.matches("\\d{2}-\\d{2}-\\d{4}")){
+					SimpleDateFormat dateFormat = new SimpleDateFormat("dd-MM-yyyy", Locale.ENGLISH);
+					try{
+						newDate = dateFormat.parse(token);
+					} catch (ParseException pe){
+						throw new WrongCommandException();
+					}
+				} else if (!token.trim().equals("")){
+					newDescription = token;
+				}
+			}
+		} else {
+			throw new WrongCommandException();
+		}
+		int count = findOperationById(id);
+		if (count != 0){
+			Operation operationToChange = list.get(count);
+			if (newHowMatch != null) operationToChange.setHowMuch(newHowMatch);
 
+			if (newDate != null) operationToChange.setDate(newDate);
+
+			if (newTags != null) operationToChange.setTags(newTags);
+
+			if (newDescription != null) operationToChange.setDescription(newDescription);
+		} else {
+			throw new WrongCommandException();
+		}
 	}
 
-	
+	private int findOperationById(int id){		
+		for (int i = 0; i < list.size(); i++){
+			if (list.get(i).getId() == id){				
+				return i;
+			}
+		}
+		return 0;
+	}
 	public List getList(){
 		return list;
 	}
