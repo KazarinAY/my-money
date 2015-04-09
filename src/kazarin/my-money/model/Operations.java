@@ -62,6 +62,9 @@ public class Operations implements Externalizable{
 		System.out.println("Balance = " + balance + ", total operations = " + list.size());
 	}	
 
+	/**
+	 * @param
+	 */
 	public void add(String line) throws WrongCommandException{		
 		BigDecimal summ = null;
 		Date date = null;
@@ -96,6 +99,9 @@ public class Operations implements Externalizable{
 		list.add(new Operation(summ, date, description, tagsArr));		
 	}
 
+	/**
+	 * @param
+	 */
 	public void delete(String line) throws WrongCommandException{
 		try{
 			System.out.println(line.split(" ")[1]);
@@ -117,6 +123,9 @@ public class Operations implements Externalizable{
 
 	}
 
+	/**
+	 * @param
+	 */
 	public void change(String line) throws WrongCommandException{
 		int id = 0;
 		BigDecimal newHowMatch = null;
@@ -166,7 +175,11 @@ public class Operations implements Externalizable{
 			throw new WrongCommandException();
 		}
 	}
-
+	
+	/**
+	 * @param
+	 * @return
+	 */
 	private int findOperationById(int id){		
 		for (int i = 0; i < list.size(); i++){
 			if (list.get(i).getId() == id){				
@@ -175,6 +188,10 @@ public class Operations implements Externalizable{
 		}
 		return 0;
 	}
+
+	/**
+	 * @return
+	 */
 	public List getList(){
 		return list;
 	}

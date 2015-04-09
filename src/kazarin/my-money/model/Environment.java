@@ -8,7 +8,6 @@ import java.io.FileOutputStream;
 import java.io.ObjectOutputStream;
 import java.io.ObjectInputStream;
 import java.io.IOException;
-
 public class Environment{
 	private static Environment instance;
 
@@ -26,6 +25,9 @@ public class Environment{
 		dataFile = Paths.get( directory + "/data");		
 	}	
 	
+	/**
+	 * @return
+	 */
 	public static Environment getInstance(){
 		if (instance == null) {
 			instance = new Environment();
@@ -33,6 +35,9 @@ public class Environment{
 		return instance;
 	}
 
+	/**
+	 * @return
+	 */
 	public Operations load(){
 		Operations ops = Operations.getInstance();
 		if (Files.exists(dataFile)){
@@ -55,6 +60,9 @@ public class Environment{
 		return ops;
 	}
 	
+	/**
+	 * 
+	 */
 	public void save(){
 		if (Files.exists(dataFile)){
 			try (FileOutputStream fos = new FileOutputStream(dataFile.toString());
@@ -73,6 +81,9 @@ public class Environment{
 		}	
 	}	
 
+	/**
+	 * 
+	 */
 	private void createDataFile(){
 		try {
 			Files.createFile(dataFile);
@@ -81,6 +92,9 @@ public class Environment{
 		}
 	}
 
+	/**
+	 * 
+	 */
 	private void createDirectories(){
 		try{
 			Files.createDirectories(dataDir);	

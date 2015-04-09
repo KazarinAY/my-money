@@ -1,0 +1,1 @@
+package kazarin.my_money.model;
