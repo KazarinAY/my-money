@@ -20,15 +20,15 @@ public final class Main {
 	public static void main(final String[] args)
 			throws IOException, ClassNotFoundException {
 		Environment env = Environment.getInstance();
-		Operations ops = env.load();
-		System.out.println("LOG Main.main(): env.load() = " + ops);
+		env.loadFromTxt("/tmp/file1");
+		Operations ops = Operations.getInstance();
 		ops.printStatistic();
 
 		System.out.print("My Money, enter command:");
 		try (BufferedReader reader =
 					new BufferedReader(new InputStreamReader(System.in))) {
 			while (true) {
-				String line = reader.readLine().split(" ")[0];
+				String line = reader.readLine();
 
 				switch (line.split(" ")[0]) {
 					case "show": 	ops.showAllList();
@@ -70,7 +70,8 @@ public final class Main {
 									printEnterCommand();
 									break;
 
-					case "exit":	return;
+					case "exit":	env.saveToTxt("/tmp/file1");
+									return;
 
 					default: 		printWrongCommand();
 									printEnterCommand();
@@ -80,8 +81,7 @@ public final class Main {
 		} catch (IOException e) {
 			System.err.println(e.getMessage());
 		}
-
-		env.save();
+		
 	} // main()
 
 	/**

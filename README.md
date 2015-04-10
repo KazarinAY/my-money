@@ -1,15 +1,18 @@
 # My Money
 Simple accounting.
+=========
 
 It's my first indy project - don't judge me strictly. :)
 
-		Instructions
+Instructions
+-----
 1. Compile:
 	my-money$ bash compileAll.sh
 2. Run:
 	my-money$ bash run.sh
 
-		Commands inside the programm:
+Commands inside the programm:
+-----
 show - shows list of all operations
 
 add - adds a new operation
