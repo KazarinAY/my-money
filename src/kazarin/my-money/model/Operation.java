@@ -6,6 +6,8 @@ import java.util.Locale;
 import java.util.Set;
 import java.util.HashSet;
 import java.math.BigDecimal;
+import java.lang.IllegalArgumentException;
+import java.text.ParseException;
 
 /**
  * An operation.
@@ -51,11 +53,15 @@ public class Operation {
      */
     public Operation(final BigDecimal howMuch, final Date date,
                      final String description, final String... tags) {
+        if (howMuch == null || date == null) throw new IllegalArgumentException(
+                                                    "howMuch or date == null");
+
         ids++;
         this.id = ids;
         this.howMuch = howMuch;
         this.date = date;
-        this.description = description;
+        if (description == null) this.description = "";
+        else this.description = description;
         this.tags = new HashSet<>();
         if (tags != null) {
             for (String tag : tags) {
@@ -84,12 +90,13 @@ public class Operation {
         return ids;
     }
 
-    /**
+    /*
      * @param newIds    sets newIds
-     */
+     
     public static final void setIds(final int newIds) {
         ids = newIds;
     }
+    */
 
     /**
      * @return id
@@ -130,6 +137,9 @@ public class Operation {
      * @param howMuch   sets howMuch
      */
     public final void setHowMuch(final BigDecimal howMuch) {
+        if (howMuch == null)
+                        throw new IllegalArgumentException("howMuch == null");
+
         this.howMuch = howMuch;
     }
 
@@ -137,7 +147,25 @@ public class Operation {
      * @param date  sets date
      */
     public final void setDate(final Date date) {
+        if (date == null) throw new IllegalArgumentException("date == null");
+
         this.date = date;
+    }
+
+    /**
+     * @param dateString  sets String date
+     */
+    public final void setDate(final String dateString) {
+        if (dateString == null)
+                            throw new IllegalArgumentException("date == null");
+
+        SimpleDateFormat dateFormat =
+                            new SimpleDateFormat("dd-MM-yyyy", Locale.ENGLISH);
+        try {               
+            this.date = dateFormat.parse(dateString);
+        } catch (ParseException pe) {
+            throw new IllegalArgumentException("date mast be dd-MM-yyyy");
+        }
     }
 
     /**
@@ -156,7 +184,8 @@ public class Operation {
      * @param description   sets description
      */
     public final void setDescription(final String description) {
-        this.description = description;
+        if (description == null) this.description = "";
+        else this.description = description;
     }
 
     /**
@@ -164,10 +193,6 @@ public class Operation {
      * @return String   
      */
     public final String toCommandString() {
-
-        if (howMuch == null || date == null) {
-            throw new NullOperationException();
-        }
 
         String tagsStr = "";
         for (String tag : tags) {
@@ -187,11 +212,7 @@ public class Operation {
     }
     
     @Override
-    public final String toString() {
-
-        if (howMuch == null || date == null) {
-            throw new NullOperationException();
-        }
+    public final String toString() {        
 
         String tagsStr = "";
         for (String tag : tags) {
@@ -226,38 +247,20 @@ public class Operation {
 
         Operation op = (Operation) obj;
 
-        if (id != op.getId()) {
-            return false;
-        }
+        if (id != op.getId()) return false;        
 
         if (howMuch != null ? !howMuch.equals(op.getHowMuch())
-                            : op.getHowMuch() != null) {
-            return false;
-        }
-
+                            : op.getHowMuch() != null) return false;
+       
         if (date != null ? !date.equals(op.getDate())
-                         : op.getDate() != null) {
-            return false;
-        }
-
+                         : op.getDate() != null) return false;
+        
         if (tags != null ? !tags.equals(op.getTags())
-                         : op.getTags() != null) {
-            return false;
-        }
+                         : op.getTags() != null) return false;
+
         if (description != null ? !description.equals(op.getDescription())
-                                : op.getDescription() != null) {
-            return false;
-        }
+                                : op.getDescription() != null) return false;
 
         return true;
-    }
-
-    /**
-    * NullOperationException.
-     * Thrown when an application tries to call operation
-     * that has null howMuch or date field
-    */
-    private static class NullOperationException extends RuntimeException {
-
-    }
+    }    
 }

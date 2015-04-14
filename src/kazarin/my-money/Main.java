@@ -20,7 +20,7 @@ public final class Main {
 	public static void main(final String[] args)
 			throws IOException, ClassNotFoundException {
 		Environment env = Environment.getInstance();
-		env.loadFromTxt("/tmp/file1");
+		env.loadFromTxt(env.getTxtDataFile());
 		Operations ops = Operations.getInstance();
 		ops.printStatistic();
 
@@ -70,7 +70,7 @@ public final class Main {
 									printEnterCommand();
 									break;
 
-					case "exit":	env.saveToTxt("/tmp/file1");
+					case "exit":	env.saveToTxt(env.getTxtDataFile());
 									return;
 
 					default: 		printWrongCommand();

@@ -120,18 +120,8 @@ public final class Operations {
         if (date == null) {
             date = new Date();
         }
-        Operation newOp = new Operation(summ, date, description, tagsArr);
-        System.out.println(newOp.getIds());
-        System.out.println(newOp.getId());
-        System.out.println(newOp.getHowMuch());
-        System.out.println(newOp.getDate());
-        String tagsStr = "";
-        for (String tag : newOp.getTags()) {
-            tagsStr += ", " + tag;
-        }
-        System.out.println(tagsStr);
-        System.out.println(newOp);
-        list.add(newOp);
+
+        list.add(new Operation(summ, date, description, tagsArr));
 
     }
 
