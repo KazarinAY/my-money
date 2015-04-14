@@ -30,10 +30,16 @@ public final class Operations {
     private List<Operation> list;
 
     /**
+     * Aimple date format.
+     */
+    private SimpleDateFormat dateFormat;
+
+    /**
      * Constructor.
      */
     private Operations() {
         list = new ArrayList<>();
+        dateFormat = new SimpleDateFormat("dd-MM-yyyy", Locale.ENGLISH);
     }
 
     /**
@@ -86,43 +92,82 @@ public final class Operations {
      * @param line      command line
      * @throws WrongCommandException if bad command line
      */
-    public void add(final String line) throws WrongCommandException {
+    public void add(String line) throws WrongCommandException {
+
+        if (line == null || line == "") throw new WrongCommandException();
+
+        if (!line.startsWith("add ")) throw new WrongCommandException();
+
+        line = line.substring(4);
+
+        int colons = line.replaceAll("[^:]", "").length();
+        int bars = line.replaceAll("[^#]", "").length();
+
+        if (colons > 2 || bars > 1) throw new WrongCommandException();
+
         BigDecimal summ = null;
         Date date = null;
-        String description = "";
-        String[] tagsArr = null;        
-        String[] tokens = line.split(":");
-        try {
-            
-            summ = new BigDecimal(tokens[0].split(" ")[1]);
-            
-            if (summ == null) {
-                throw new WrongCommandException();
-            }
-            if (tokens.length > 1) {
-                SimpleDateFormat dateFormat =
-                            new SimpleDateFormat("dd-MM-yyyy", Locale.ENGLISH);
-                date = dateFormat.parse(tokens[1]);
-            }
-            if (tokens.length > 2) {
-                String[] descAndTags = tokens[2].split("#");
-                if (descAndTags.length > 0) {
-                    description = descAndTags[0];
-                }
-                if (descAndTags.length > 1) {
-                    tagsArr = descAndTags[1].split(",");
-                }
+        String description = null;
+        String[] tagsArr = null;
 
+        if (bars == 1) {            
+            if (line.indexOf('#') < line.lastIndexOf(':')) throw new WrongCommandException();
+
+            String argsLine = line.split("#")[1];
+            tagsArr = argsLine.split(",");
+            for (String arg : tagsArr) {
+                arg = arg.trim();
             }
-        } catch (Exception e) {
+
+            line = line.split("#")[0];
+        }
+
+        String[] tokens = line.split(":");        
+
+        try {   
+            tokens[0] = tokens[0].trim();            
+            summ = new BigDecimal(tokens[0]);
+        } catch (NumberFormatException nfe) {
             throw new WrongCommandException();
         }
+
+        if (tokens.length > 2) { 
+            tokens[1] = tokens[1].trim();
+            
+            if (tokens[1].matches("\\d{2}\\.\\d{2}\\.\\d{4}")) {
+                tokens[1] = tokens[1].replaceAll("\\.", "-");
+            }
+
+            if (tokens[1].matches("\\d{2}-\\d{2}-\\d{4}")){
+
+                date = parseDate(tokens[1]); 
+                
+            } else {
+                description = tokens[1];
+            }  
+        } 
+
+        if (tokens.length == 3 ) {
+            if (description == null){
+                description = tokens[2];
+            } else {                        
+                date = parseDate(tokens[2]); 
+            }            
+        }       
+
         if (date == null) {
             date = new Date();
         }
 
         list.add(new Operation(summ, date, description, tagsArr));
+    }
 
+    private Date parseDate(String stringDate) throws WrongCommandException{
+        try {
+            return dateFormat.parse(stringDate); 
+        } catch (ParseException pe) {
+            throw new WrongCommandException();
+        }
     }
 
     /**
@@ -179,8 +224,7 @@ public final class Operations {
                 if (token.matches("\\d+(\\.0*)?")) {
                     newHowMatch = new BigDecimal(token);
                 } else if (token.matches("\\d{2}-\\d{2}-\\d{4}")) {
-                    SimpleDateFormat dateFormat =
-                            new SimpleDateFormat("dd-MM-yyyy", Locale.ENGLISH);
+                    
                     try {
                         newDate = dateFormat.parse(token);
                     } catch (ParseException pe) {
