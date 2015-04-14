@@ -94,11 +94,11 @@ public final class Operations {
      */
     public void add(String line) throws WrongCommandException {
 
-        if (line == null || line == "") throw new WrongCommandException();
+        if (line == null || line.equals("")) throw new WrongCommandException();
 
         if (!line.startsWith("add ")) throw new WrongCommandException();
 
-        line = line.substring(4);
+        line = line.substring(4); //size of "add "
 
         int colons = line.replaceAll("[^:]", "").length();
         int bars = line.replaceAll("[^#]", "").length();
@@ -175,11 +175,16 @@ public final class Operations {
      * @param line      command line
      * @throws WrongCommandException if bad command line
      */
-    public void delete(final String line) throws WrongCommandException {
-        try {
-            System.out.println(line.split(" ")[1]);
-            int id = Integer.parseInt(line.split(" ")[1]);
-            System.out.println("id = " + id + " ids = " + Operation.getIds());
+    public void delete(String line) throws WrongCommandException {
+        if (line == null || line.equals("")) throw new WrongCommandException();
+        
+        if (!line.startsWith("delete ")) throw new WrongCommandException();
+        
+        line = line.substring(7);  //size of "delete "
+        line = line.trim();
+        try {            
+            int id = Integer.parseInt(line);
+            
             if (id > Operation.getIds()) {
                 throw new WrongCommandException();
             }
@@ -202,6 +207,8 @@ public final class Operations {
      * @throws WrongCommandException if bad command line
      */
     public void change(final String line) throws WrongCommandException {
+        if (line == null || line.equals("")) throw new WrongCommandException();
+
         int id = 0;
         BigDecimal newHowMatch = null;
         Date newDate = null;
@@ -273,6 +280,13 @@ public final class Operations {
             }
         }
         return -1;
+    }
+
+    /**
+     * Gets list size.
+     */
+    public int size(){
+        return list.size();
     }
 
     /**

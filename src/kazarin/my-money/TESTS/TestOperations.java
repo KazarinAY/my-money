@@ -11,7 +11,7 @@ import java.io.IOException;
 
 public class TestOperations {	
 	Operations operations = Operations.getInstance();
-	/*
+
 	@Test(expected=WrongCommandException.class)
 	public void testAdd0() throws WrongCommandException {
 		operations.add(null);		
@@ -39,7 +39,7 @@ public class TestOperations {
 
 	@Test(expected=WrongCommandException.class)
 	public void testAdd5() throws WrongCommandException {
-		operations.add("add 135 : 13.04.2015 : test description # test tag1, testTag2");
+		operations.add("add 135 : 13042015 : test description # test tag1, testTag2");
 	}
 
 	@Test(expected=WrongCommandException.class)
@@ -87,7 +87,6 @@ public class TestOperations {
 		operations.add("add 135 : test description # test tag1, testTag2 : 2015-13-04");
 	}
 
-	*/
 	@Test
 	public void testAddNorm0() throws WrongCommandException {
 		operations.add("add 135 : 13-04-2015 : test description # test tag1, testTag2");		
@@ -136,5 +135,51 @@ public class TestOperations {
 	@Test
 	public void testAddNorm9() throws WrongCommandException {		
 		operations.add("add -135 : test description ");
+	}
+
+	@Test(expected=WrongCommandException.class)
+	public void testDelete0() throws WrongCommandException {
+		operations.delete(null);
+	}
+
+	@Test(expected=WrongCommandException.class)
+	public void testDelete1() throws WrongCommandException {
+		operations.delete("");
+	}
+
+	@Test(expected=WrongCommandException.class)
+	public void testDelete2() throws WrongCommandException {
+		operations.delete("delete");
+	}
+
+	@Test(expected=WrongCommandException.class)
+	public void testDelete3() throws WrongCommandException {
+		operations.delete("delete wer");
+	}
+
+	@Test(expected=WrongCommandException.class)
+	public void testDelete4() throws WrongCommandException {
+		operations.delete("delete " + (operations.size() + 10));
+	}
+
+	@Test(expected=WrongCommandException.class)
+	public void testDelete5() throws WrongCommandException {
+		operations.delete("asdfasdf");
+	}
+
+	@Test
+	public void testDeleteNorm0() throws WrongCommandException {
+		int size = operations.size();
+		if (size == 0) return;		
+		operations.delete("delete " + (size - 1));
+		assertEquals(operations.size(), size - 1);
+	}
+
+	@Test
+	public void testDeleteNorm1() throws WrongCommandException {
+		int size = operations.size();
+		if (size == 0) return;		
+		operations.delete("delete " + (size / 2));
+		assertEquals(operations.size(), size - 1);
 	}
 }
