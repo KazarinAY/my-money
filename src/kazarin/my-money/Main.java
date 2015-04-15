@@ -44,7 +44,7 @@ public final class Main {
 									printEnterCommand();
 									break;
 
-					case "del":		try {
+					case "delete":		try {
 										ops.delete(line);
 										ops.printStatistic();
 									} catch (WrongCommandException e) {

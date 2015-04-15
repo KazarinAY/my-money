@@ -93,7 +93,8 @@ public final class Operations {
      * @throws WrongCommandException if bad command line
      */
     public void add(String line) throws WrongCommandException {
-
+//LOG        System.out.println("************ADD*****************" );
+//LOG        System.out.println("Line: " + line);
         if (line == null || line.equals("")) throw new WrongCommandException();
 
         if (!line.startsWith("add ")) throw new WrongCommandException();
@@ -123,43 +124,17 @@ public final class Operations {
         }
 
         String[] tokens = line.split(":");        
+//LOG        System.out.println("Line to parse: " + line);
+        Operation newOp = parseOperation(tokens);
 
-        try {   
-            tokens[0] = tokens[0].trim();            
-            summ = new BigDecimal(tokens[0]);
-        } catch (NumberFormatException nfe) {
-            throw new WrongCommandException();
-        }
-
-        if (tokens.length > 2) { 
-            tokens[1] = tokens[1].trim();
-            
-            if (tokens[1].matches("\\d{2}\\.\\d{2}\\.\\d{4}")) {
-                tokens[1] = tokens[1].replaceAll("\\.", "-");
-            }
-
-            if (tokens[1].matches("\\d{2}-\\d{2}-\\d{4}")){
-
-                date = parseDate(tokens[1]); 
-                
-            } else {
-                description = tokens[1];
-            }  
-        } 
-
-        if (tokens.length == 3 ) {
-            if (description == null){
-                description = tokens[2];
-            } else {                        
-                date = parseDate(tokens[2]); 
-            }            
-        }       
-
-        if (date == null) {
-            date = new Date();
-        }
-
-        list.add(new Operation(summ, date, description, tagsArr));
+//LOG        System.out.println("after parse: " + newOp.getHowMuch() + " " + newOp.getDate() + " "
+//LOG                                                    + newOp.getDescription() );
+        
+        if (newOp.getHowMuch() == null) throw new WrongCommandException();
+        if (newOp.getDate() == null) newOp.setDate(new Date()); 
+        newOp.setTags(tagsArr);
+        newOp.setId(size());
+        list.add(newOp);
     }
 
     private Date parseDate(String stringDate) throws WrongCommandException{
@@ -185,16 +160,21 @@ public final class Operations {
         try {            
             int id = Integer.parseInt(line);
             
-            if (id > Operation.getIds()) {
+            if (id > (size() - 1)) {
                 throw new WrongCommandException();
             }
             Iterator iterator = list.iterator();
+            boolean isFind = false;
             while (iterator.hasNext()) {
                 Operation op = (Operation) iterator.next();
-                if (op.getId() == id) {
-                    iterator.remove();
+                if (isFind) {
+                    op.setId(op.getId() - 1);
+                } else if (op.getId() == id) {
+                    iterator.remove();                    
+                    isFind = true;
                 }
             }
+
         } catch (NumberFormatException e) {
             throw new WrongCommandException();
         }
@@ -206,65 +186,100 @@ public final class Operations {
      * @param line      command line
      * @throws WrongCommandException if bad command line
      */
-    public void change(final String line) throws WrongCommandException {
+    public void change(String line) throws WrongCommandException {
+//LOG        System.out.println("************CHANGE*****************" );
+//LOG        System.out.println("Line: " + line);
         if (line == null || line.equals("")) throw new WrongCommandException();
 
-        int id = 0;
-        BigDecimal newHowMatch = null;
-        Date newDate = null;
-        String newDescription = null;
+        if (!line.startsWith("change ")) throw new WrongCommandException();
+
+        line = line.substring(7); //size of "change "
+
+        int colons = line.replaceAll("[^:]", "").length();
+        int bars = line.replaceAll("[^#]", "").length();
+
+        if (colons > 3 || bars > 1 || (bars == 0 && colons == 0 ))
+                                                          throw new WrongCommandException();
         String[] newTags = null;
-        int indexOfLineWithowtChange = 6;
-        String lineWithowtChange = line.substring(indexOfLineWithowtChange);
-        
-        StringTokenizer st = new StringTokenizer(lineWithowtChange, ":");
-        if (st.hasMoreTokens()) {
-            id = Integer.parseInt(st.nextToken().trim());
-            while (st.hasMoreTokens()) {
-                String token = st.nextToken();
-                if (token.contains("#")) {
-                    String[] tmp = token.split("#");
-                    token = tmp[0];
-                    newTags = tmp[1].split(",");
-                }
-                token = token.trim();
-                if (token.matches("\\d+(\\.0*)?")) {
-                    newHowMatch = new BigDecimal(token);
-                } else if (token.matches("\\d{2}-\\d{2}-\\d{4}")) {
-                    
-                    try {
-                        newDate = dateFormat.parse(token);
-                    } catch (ParseException pe) {
-                        throw new WrongCommandException();
-                    }
-                } else if (!token.trim().equals("")) {
-                    newDescription = token;
-                }
+        if (bars == 1) {
+            if (line.indexOf('#') < line.lastIndexOf(':')) throw new WrongCommandException();
+
+            String argsLine = line.split("#")[1];
+            newTags = argsLine.split(",");
+
+            line = line.split("#")[0];
+        }        
+
+        int id = -1;        
+
+        String[] newTokens = line.split(":");
+        if (newTokens.length > 0) {
+            try {
+                id = Integer.parseInt(newTokens[0].trim());
+            } catch (NumberFormatException nfe){
+                throw new WrongCommandException();
             }
-        } else {
-            throw new WrongCommandException();
         }
-        int count = findOperationById(id);
-        if (count != 0) {
-            Operation operationToChange = list.get(count);
-            if (newHowMatch != null) {
-                operationToChange.setHowMuch(newHowMatch);
-            }
+//LOG        System.out.println("id: " + id);
+//LOG        System.out.println("size(): " + size());
+        int newId = findOperationById(id);
+//LOG        System.out.println("newId: " + newId);
+        if (newId == -1) throw new WrongCommandException();
 
-            if (newDate != null) {
-                operationToChange.setDate(newDate);
-            }
-
-            if (newTags != null) {
-                operationToChange.setTags(newTags);
-            }
-
-            if (newDescription != null) {
-                operationToChange.setDescription(newDescription);
-            }
-        } else {
-            throw new WrongCommandException();
+        String[] parameters = new String[newTokens.length - 1];
+        for (int i = 0; i < parameters.length; i++) {
+            parameters[i] = newTokens[i + 1];
         }
+        Operation changeOp = parseOperation(parameters);       
+
+        Operation operationToChange = list.get(newId);
+        if (changeOp.getHowMuch() != null) operationToChange.setHowMuch(changeOp.getHowMuch());
+        if (changeOp.getDate() != null) operationToChange.setDate(changeOp.getDate());
+        if (changeOp.getTags() != null) operationToChange.setTags((String[] ) changeOp.getTags().toArray());
+        if (changeOp.getDescription() != null) operationToChange.setDescription(changeOp.getDescription());
+    }
+
+    private Operation parseOperation(String[] prmtrs) throws WrongCommandException {
+//LOG        System.out.println("\tparseOperation start: ");
+        Operation operation = new Operation();
+        if (prmtrs.length > 0) {
+            parseWordForOperation(operation, prmtrs, 0);
+        }
+
+        if (prmtrs.length > 1) {
+            parseWordForOperation(operation, prmtrs, 1);
+        }
+
+        if (prmtrs.length > 2) {
+            parseWordForOperation(operation, prmtrs, 2);
+        }
+
+//LOG        System.out.println("\tparseOperation end:" + operation.getHowMuch() + " " + operation.getDate() + " "
+//LOG                                                    + operation.getDescription() );
+        return operation;
+    }
+
+    private void parseWordForOperation(Operation operation, String[] prmtrs, int index) 
+                                                                throws WrongCommandException {
+        // "[+-]?(?:\\d+(?:\\.\\d*)?|\\.\\d+)(?:[eE][+-]?\\d+)?"
+//LOG        System.out.println("\t\tparseWordForOperation: " + prmtrs[index]);
+        if (prmtrs[index].trim().equals("")) throw new WrongCommandException();
+
+        if (prmtrs[index].trim().matches("[+-]?(?:\\d+(?:\\.\\d+)?|\\.\\d+)")) {
+            if (operation.getHowMuch() != null) throw new WrongCommandException();
+            operation.setHowMuch(new BigDecimal(prmtrs[index].trim()));            
+        } else if (prmtrs[index].trim().matches("\\d{2}-\\d{2}-\\d{4}")) {
+            if (operation.getDate() != null) throw new WrongCommandException();
+            try {
+                    operation.setDate(dateFormat.parse(prmtrs[index].trim()));
+                } catch (ParseException pe) {
+                    throw new WrongCommandException();
+                }
+        } else {
+            if (operation.getDescription() != null) throw new WrongCommandException();
+            operation.setDescription(prmtrs[index].trim());
+        }
+//LOG        System.out.println("\t\tparseWordForOperation: good");
     }
 
     /**

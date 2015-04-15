@@ -15,11 +15,6 @@ import java.text.ParseException;
 public class Operation {
     
     /**
-     * A number of all ids. Any single id is less then ids.
-     */
-    private static int ids = 0;
-
-    /**
      * The operation id.
      */
     private int id;
@@ -51,13 +46,12 @@ public class Operation {
      * @param description   description of operation
      * @param tags          tags
      */
-    public Operation(final BigDecimal howMuch, final Date date,
+    public Operation(final int id, final BigDecimal howMuch, final Date date,
                      final String description, final String... tags) {
         if (howMuch == null || date == null) throw new IllegalArgumentException(
                                                     "howMuch or date == null");
-
-        ids++;
-        this.id = ids;
+        
+        this.id = id;
         this.howMuch = howMuch;
         this.date = date;
         if (description == null) this.description = "";
@@ -78,25 +72,21 @@ public class Operation {
      * @param description   description of operation
      * @param tags          tags
      */
-    public Operation(final BigDecimal howMuch,
+    public Operation(final int id, final BigDecimal howMuch,
                      final String description, final String... tags) {
-        this(howMuch, new Date(), description, tags);
+        this(id, howMuch, new Date(), description, tags);
     }
 
     /**
-     * @return ids
+     * Constructor for adding and changing.
      */
-    public static final int getIds() {
-        return ids;
-    }
-
-    /*
-     * @param newIds    sets newIds
-     
-    public static final void setIds(final int newIds) {
-        ids = newIds;
-    }
-    */
+    public Operation() {        
+        this.id = -1;        
+        this.howMuch = null;
+        this.date = null;
+        this.description = null;
+        this.tags = null;
+    } 
 
     /**
      * @return id
@@ -131,6 +121,13 @@ public class Operation {
      */
     public final String getDescription() {
         return description;
+    }
+
+    /**
+     * @param id   sets id
+     */
+    public final void setId(final int id) {
+        this.id = id;
     }
 
     /**
@@ -171,8 +168,12 @@ public class Operation {
     /**
      * @param tags  sets tags
      */
-    public final void setTags(final String[] tags) {
-        this.tags.clear();
+    public final void setTags(final String[] tags) {        
+        if (this.tags == null) {
+            this.tags = new HashSet<>();
+        } else {
+            this.tags.clear();
+        }        
         if (tags != null) {
             for (String tag : tags) {
                 this.tags.add(tag);
@@ -215,11 +216,14 @@ public class Operation {
     public final String toString() {        
 
         String tagsStr = "";
+        
         for (String tag : tags) {
             tagsStr += ", " + tag;
         }        
-        tagsStr = tagsStr.substring(2);
-
+        
+        if (!tagsStr.equals(""))
+            tagsStr = tagsStr.substring(2);
+        
         String descriptionStr = "";
         if (description != null) {
             descriptionStr = description;

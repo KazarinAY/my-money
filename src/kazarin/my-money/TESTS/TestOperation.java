@@ -10,7 +10,7 @@ import java.lang.IllegalArgumentException;
 import java.util.Date;
 
 public class TestOperation {
-	Operation testOperation = new Operation(new BigDecimal("100"),
+	Operation testOperation = new Operation(1, new BigDecimal("100"),
                      "test description", new String[]{"test tag1", "test tag2", "test tag3"});
 
 	@Test(expected=IllegalArgumentException.class)

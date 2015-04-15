@@ -12,6 +12,8 @@ import java.io.IOException;
 public class TestOperations {	
 	Operations operations = Operations.getInstance();
 
+//ADD
+
 	@Test(expected=WrongCommandException.class)
 	public void testAdd0() throws WrongCommandException {
 		operations.add(null);		
@@ -88,54 +90,76 @@ public class TestOperations {
 	}
 
 	@Test
-	public void testAddNorm0() throws WrongCommandException {
+	public void testAdd15() throws WrongCommandException {
 		operations.add("add 135 : 13-04-2015 : test description # test tag1, testTag2");		
 	}
 
 	@Test
-	public void testAddNorm1() throws WrongCommandException {		
+	public void testAdd16() throws WrongCommandException {		
 		operations.add("add -135 : 13-04-2015 : test description # test tag1, testTag2");
 	}
 
 	@Test
-	public void testAddNorm2() throws WrongCommandException {
+	public void testAdd17() throws WrongCommandException {
 		operations.add("add 135 : 13-04-2015 : test description");
 	}
 
 	@Test
-	public void testAddNorm3() throws WrongCommandException {
+	public void testAdd18() throws WrongCommandException {
 		operations.add("add 135.75 : 13-04-2015 # test tag1, testTag2");
 	}
 
 	@Test
-	public void testAddNorm4() throws WrongCommandException {
+	public void testAdd19() throws WrongCommandException {
 		operations.add("add +135 : test description # test tag1, testTag2");		
 	}
 
 	@Test
-	public void testAddNorm5() throws WrongCommandException {		
+	public void testAdd20() throws WrongCommandException {		
 		operations.add("add -135.04 # test tag1, testTag2");		
 	}
 
 	@Test
-	public void testAddNorm6() throws WrongCommandException {
+	public void testAdd21() throws WrongCommandException {
 		operations.add("add 135.85");		
 	}
 
 	@Test
-	public void testAddNorm7() throws WrongCommandException {
+	public void testAdd22() throws WrongCommandException {
 		operations.add("add 135 : 13-04-2015 : test, description # test tag1, testTag2");		
 	}
 
-	@Test
-	public void testAddNorm8() throws WrongCommandException {		
+	@Test(expected=WrongCommandException.class)
+	public void testAdd23() throws WrongCommandException {	
 		operations.add("add -135 : 13.04.2015 : test description # test tag1, testTag2");
 	}
 
 	@Test
-	public void testAddNorm9() throws WrongCommandException {		
+	public void testAdd24() throws WrongCommandException {		
 		operations.add("add -135 : test description ");
 	}
+
+	@Test
+	public void testAdd25() throws WrongCommandException {		
+		operations.add("add test description : 13-04-2015 : -135  # test tag1, testTag2");
+	}
+
+	@Test
+	public void testAdd26() throws WrongCommandException {		
+		operations.add("add 13-04-2015 : test description : -135  # test tag1, testTag2");
+	}
+
+	@Test(expected=WrongCommandException.class)
+	public void testAdd27() throws WrongCommandException {		
+		operations.add("add 13-04-2015 : 14-05-2015 : -135  # test tag1, testTag2");
+	}
+
+	@Test(expected=WrongCommandException.class)
+	public void testAdd28() throws WrongCommandException {		
+		operations.add("add 500 : -135  # test tag1, testTag2");
+	}
+
+//DELETE
 
 	@Test(expected=WrongCommandException.class)
 	public void testDelete0() throws WrongCommandException {
@@ -168,18 +192,192 @@ public class TestOperations {
 	}
 
 	@Test
-	public void testDeleteNorm0() throws WrongCommandException {
+	public void testDelete6() throws WrongCommandException {
 		int size = operations.size();
-		if (size == 0) return;		
+		if (size == 0) return;
 		operations.delete("delete " + (size - 1));
 		assertEquals(operations.size(), size - 1);
 	}
 
 	@Test
-	public void testDeleteNorm1() throws WrongCommandException {
+	public void testDelete7() throws WrongCommandException {
 		int size = operations.size();
-		if (size == 0) return;		
+		if (size == 0) return;
 		operations.delete("delete " + (size / 2));
 		assertEquals(operations.size(), size - 1);
+	}
+
+//CHANGE
+
+	@Test(expected=WrongCommandException.class)
+	public void testChange0() throws WrongCommandException {
+		operations.change(null);
+	}
+
+	@Test(expected=WrongCommandException.class)
+	public void testChange1() throws WrongCommandException {
+		operations.change("");
+	}
+
+	@Test(expected=WrongCommandException.class)
+	public void testChange2() throws WrongCommandException {
+		operations.change("some text");
+	}
+
+	@Test(expected=WrongCommandException.class)
+	public void testChange3() throws WrongCommandException {
+		operations.change("change some text");
+	}
+
+	@Test(expected=WrongCommandException.class)
+	public void testChange4() throws WrongCommandException {
+		int size = operations.size();
+		if (size == 0) return;
+		operations.change("change " + (size/2));
+	}
+
+	@Test(expected=WrongCommandException.class)
+	public void testChange5() throws WrongCommandException {
+		int size = operations.size();
+		if (size == 0) return;
+		operations.change("change " + (size/2) + " some text");
+	}
+
+	@Test(expected=WrongCommandException.class)
+	public void testChange6() throws WrongCommandException {
+		int size = operations.size();
+		if (size == 0) return;
+		operations.change("change " + (size/2) + " 125 : description");
+	}
+
+	@Test(expected=WrongCommandException.class)
+	public void testChange7() throws WrongCommandException {
+		int size = operations.size();
+		if (size == 0) return;
+		operations.change("change " + (size/2) + ": ");
+	}
+
+	@Test(expected=WrongCommandException.class)
+	public void testChange8() throws WrongCommandException {
+		int size = operations.size();
+		if (size == 0) return;
+		operations.change("change " + (size/2) + " 125 : description");
+	}
+
+	@Test(expected=WrongCommandException.class)
+	public void testChange9() throws WrongCommandException {
+		int size = operations.size();
+		if (size == 0) return;
+		operations.change("change " + (size/2) + ": 125 : description: description2");
+	}
+
+	@Test(expected=WrongCommandException.class)
+	public void testChange10() throws WrongCommandException {
+		int size = operations.size();
+		if (size == 0) return;
+		operations.change("change " + (size/2) + ": 125 # test tag1, testTag2: description");
+	}
+
+	@Test(expected=WrongCommandException.class)
+	public void testChange11() throws WrongCommandException {
+		int size = operations.size();
+		if (size == 0) return;
+		operations.change("change " + (size/2) + ": 125 # test tag1 # testTag2");
+	}
+
+	@Test(expected=WrongCommandException.class)
+	public void testChange12() throws WrongCommandException {
+		int size = operations.size();
+		if (size == 0) return;
+		operations.change("change # test tag1 # testTag2");
+	}
+
+	@Test
+	public void testChange13() throws WrongCommandException {
+		int size = operations.size();
+		if (size == 0) return;
+		operations.change("change " + (size/2) + ": 125 : 12-12-2004: new description "
+																+ "# test tag1, testTag2");
+	}
+
+	@Test
+	public void testChange14() throws WrongCommandException {
+		int size = operations.size();
+		if (size == 0) return;
+		operations.change("change " + (size/2) + ": 125 : 12-12-2004: new description ");
+	}
+
+	@Test(expected=WrongCommandException.class)
+	public void testChange15() throws WrongCommandException {		
+		int size = operations.size();
+		if (size == 0) return;
+		operations.change("change " + (size/2) + ": 125 : 12-12-2004: # test tag1, testTag2");
+	}
+
+	@Test
+	public void testChange16() throws WrongCommandException {
+		int size = operations.size();
+		if (size == 0) return;
+		operations.change("change " + (size/2) + ": 125 : new description "
+																+ "# test tag1, testTag2");
+	}
+
+	@Test
+	public void testChange17() throws WrongCommandException {
+		int size = operations.size();
+		if (size == 0) return;
+		operations.change("change " + (size/2) + ": 125 # test tag1, testTag2");
+	}
+
+	@Test
+	public void testChange18() throws WrongCommandException {
+		int size = operations.size();
+		if (size == 0) return;
+		operations.change("change " + (size/2) + "# test tag1, testTag2");
+	}
+
+	@Test
+	public void testChange19() throws WrongCommandException {
+		int size = operations.size();
+		if (size == 0) return;
+		operations.change("change " + (size/2) + ": 12-12-2004: new description "
+																+ "# test tag1, testTag2");
+	}
+
+	@Test
+	public void testChange20() throws WrongCommandException {
+		int size = operations.size();
+		if (size == 0) return;
+		operations.change("change " + (size/2) + ": 12-12-2004 "
+																+ "# test tag1, testTag2");
+	}
+
+	@Test
+	public void testChange21() throws WrongCommandException {
+		int size = operations.size();
+		if (size == 0) return;
+		operations.change("change " + (size/2) + ": new description "
+																+ "# test tag1, testTag2");
+	}
+
+	@Test
+	public void testChange22() throws WrongCommandException {
+		int size = operations.size();
+		if (size == 0) return;
+		operations.change("change " + (size/2) + ": new description");
+	}
+
+	@Test
+	public void testChange23() throws WrongCommandException {
+		int size = operations.size();
+		if (size == 0) return;
+		operations.change("change " + (size/2) + ": 12-12-2004");
+	}
+
+	@Test
+	public void testChange24() throws WrongCommandException {
+		int size = operations.size();
+		if (size == 0) return;
+		operations.change("change " + (size/2) + ": -125");
 	}
 }
