@@ -1,5 +1,7 @@
 package kazarin.my_money.model;
 
+import kazarin.my_money.db.OperationsDao;
+
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -134,6 +136,9 @@ public final class Operations {
         if (newOp.getDate() == null) newOp.setDate(new Date()); 
         newOp.setTags(tagsArr);
         newOp.setId(size());
+
+        OperationsDao opDao = new OperationsDao();
+        opDao.add(newOp);
         list.add(newOp);
     }
 
@@ -158,22 +163,20 @@ public final class Operations {
         line = line.substring(7);  //size of "delete "
         line = line.trim();
         try {            
-            int id = Integer.parseInt(line);
+            int id = Integer.parseInt(line);            
             
-            if (id > (size() - 1)) {
-                throw new WrongCommandException();
-            }
             Iterator iterator = list.iterator();
-            boolean isFind = false;
+            
+            OperationsDao opDao = new OperationsDao();
             while (iterator.hasNext()) {
                 Operation op = (Operation) iterator.next();
-                if (isFind) {
-                    op.setId(op.getId() - 1);
-                } else if (op.getId() == id) {
-                    iterator.remove();                    
-                    isFind = true;
+                
+                if (op.getId() == id) {                    
+                    opDao.delete(op);                 
+                    break;
                 }
             }
+            setList(opDao.getAll());
 
         } catch (NumberFormatException e) {
             throw new WrongCommandException();
@@ -210,21 +213,21 @@ public final class Operations {
             line = line.split("#")[0];
         }        
 
-        int id = -1;        
+        int idToFind = -1;        
 
         String[] newTokens = line.split(":");
         if (newTokens.length > 0) {
             try {
-                id = Integer.parseInt(newTokens[0].trim());
+                idToFind = Integer.parseInt(newTokens[0].trim());
             } catch (NumberFormatException nfe){
                 throw new WrongCommandException();
             }
         }
-//LOG        System.out.println("id: " + id);
+        System.out.println("idToFind: " + idToFind);
 //LOG        System.out.println("size(): " + size());
-        int newId = findOperationById(id);
-//LOG        System.out.println("newId: " + newId);
-        if (newId == -1) throw new WrongCommandException();
+        int index = findOperationIndexById(idToFind);
+        System.out.println("index: " + index);
+        if (index == -1) throw new WrongCommandException();
 
         String[] parameters = new String[newTokens.length - 1];
         for (int i = 0; i < parameters.length; i++) {
@@ -232,11 +235,15 @@ public final class Operations {
         }
         Operation changeOp = parseOperation(parameters);       
 
-        Operation operationToChange = list.get(newId);
+        Operation operationToChange = list.get(index);
+
         if (changeOp.getHowMuch() != null) operationToChange.setHowMuch(changeOp.getHowMuch());
         if (changeOp.getDate() != null) operationToChange.setDate(changeOp.getDate());
-        if (changeOp.getTags() != null) operationToChange.setTags((String[] ) changeOp.getTags().toArray());
         if (changeOp.getDescription() != null) operationToChange.setDescription(changeOp.getDescription());
+        if (newTags != null) operationToChange.setTags(newTags);
+        OperationsDao opDao = new OperationsDao();
+        opDao.update(operationToChange);
+        //list.set(index, operationToChange);
     }
 
     private Operation parseOperation(String[] prmtrs) throws WrongCommandException {
@@ -288,7 +295,7 @@ public final class Operations {
      * specified element in this list, or -1 if this list does not
      * contain the element.
      */
-    private int findOperationById(final int id) {
+    private int findOperationIndexById(final int id) {
         for (int i = 0; i < list.size(); i++) {
             if (list.get(i).getId() == id) {
                 return i;
@@ -309,6 +316,13 @@ public final class Operations {
      */
     public  List<Operation> getList() {
         return list;
+    }
+
+    /**
+     * @param list  Sets up the list.
+     */
+    public  void setList(List<Operation> list) {
+        this.list = list;
     }
 
     @Override

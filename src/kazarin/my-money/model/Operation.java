@@ -117,6 +117,20 @@ public class Operation {
     }
 
     /**
+     * @return tags string
+     */
+    public final String getTagsStr() {
+        if (tags == null) return null;
+        String tagsStr = "";
+        for (String tag : tags) {
+            tagsStr += ", " + tag.trim();
+        } 
+        if (tagsStr.startsWith(", "))      
+            tagsStr = tagsStr.substring(2);
+        return tagsStr;
+    }
+
+    /**
      * @return description
      */
     public final String getDescription() {
@@ -195,12 +209,8 @@ public class Operation {
      */
     public final String toCommandString() {
 
-        String tagsStr = "";
-        for (String tag : tags) {
-            tagsStr += ", " + tag;
-        }        
-        tagsStr = tagsStr.substring(2);
-
+        String tagsStr = getTagsStr();
+        
         String descriptionStr = "";
         if (description != null) {
             descriptionStr = description;
@@ -215,15 +225,8 @@ public class Operation {
     @Override
     public final String toString() {        
 
-        String tagsStr = "";
-        
-        for (String tag : tags) {
-            tagsStr += ", " + tag;
-        }        
-        
-        if (!tagsStr.equals(""))
-            tagsStr = tagsStr.substring(2);
-        
+        String tagsStr = getTagsStr();        
+              
         String descriptionStr = "";
         if (description != null) {
             descriptionStr = description;
