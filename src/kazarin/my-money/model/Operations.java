@@ -135,11 +135,10 @@ public final class Operations {
         if (newOp.getHowMuch() == null) throw new WrongCommandException();
         if (newOp.getDate() == null) newOp.setDate(new Date()); 
         newOp.setTags(tagsArr);
-        newOp.setId(size());
-
+        
         OperationsDao opDao = new OperationsDao();
         opDao.add(newOp);
-        list.add(newOp);
+        setList(opDao.getAll());
     }
 
     private Date parseDate(String stringDate) throws WrongCommandException{
