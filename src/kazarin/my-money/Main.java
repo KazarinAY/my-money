@@ -1,11 +1,14 @@
 package kazarin.my_money;
 
+import kazarin.my_money.db.OperationsDao;
 import kazarin.my_money.model.Operations;
+import kazarin.my_money.model.Operation;
 import kazarin.my_money.model.Environment;
 import kazarin.my_money.model.WrongCommandException;
 import java.io.IOException;
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
+import java.util.ArrayList;
 
 /**
  * Main class.
@@ -19,6 +22,14 @@ public final class Main {
 	 */
 	public static void main(final String[] args)
 			throws IOException, ClassNotFoundException {
+
+		OperationsDao opDao = new OperationsDao();
+		System.out.println("My Money, DAO:");
+		ArrayList<Operation> listFromDao = (ArrayList<Operation>) opDao.getAll();
+		for (Operation op : listFromDao) {
+			System.out.println(op);
+		}
+
 		Environment env = Environment.getInstance();
 		env.loadFromTxt(env.getTxtDataFile());
 		Operations ops = Operations.getInstance();
