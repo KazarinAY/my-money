@@ -2,6 +2,7 @@
  * OperationListPanel
  */
 package kazarin.my_money.gui;
+
 import kazarin.my_money.model.Operations;
 import kazarin.my_money.model.Operation;
 
@@ -29,7 +30,7 @@ public class OperationListPanel extends JPanel implements ActionListener{
 
 	private JFrame frame;
 	private JTable table;
-	private TableModel groupTableModel;	
+	TableModel tableModel;	
 	private List<Operation> dataList;
 	
 	/**	
@@ -37,7 +38,7 @@ public class OperationListPanel extends JPanel implements ActionListener{
 	 *
 	 * @param frame is passed to the modal dialogs
 	 */
-	public OperationListPanel(JFrame frame){
+	public OperationListPanel(JFrame frame) {
 		super();
 
 		this.frame = frame;
@@ -48,7 +49,7 @@ public class OperationListPanel extends JPanel implements ActionListener{
 		
 		table = new JTable();
 		
-		TableModel tableModel = new AbstractTableModel(){
+		tableModel = new AbstractTableModel() {
 	
 			private String[] columnNames = {"How Much",
 								            "Date",
@@ -60,7 +61,7 @@ public class OperationListPanel extends JPanel implements ActionListener{
 			/**
 		 	 * Gets the size of groups list
 		 	 */
-			public int getDataListSize(){
+			public int getDataListSize() {
 				return dataList.size();
 			}
 			
@@ -94,11 +95,11 @@ public class OperationListPanel extends JPanel implements ActionListener{
 			
 			@Override
 			public void setValueAt(Object aValue, int row, int col) {
-				if(dataList.size() < row){ 								//add new row
+				if(dataList.size() < row) { 								//add new row
 					Operation operation = new Operation();
 					operation.setHowMuch((BigDecimal)aValue);
 					dataList.add(operation);			
-				}else {													//change row
+				} else {													//change row
 					Operation operation = dataList.get(row);
 					switch(col){
 						case 0: operation.setHowMuch((BigDecimal)aValue);
@@ -119,7 +120,7 @@ public class OperationListPanel extends JPanel implements ActionListener{
 			 *
 			 * @param row to delete
 			 */
-			public void deleteRow(int row){
+			public void deleteRow(int row) {
 				dataList.remove(row);
 				fireTableRowsDeleted(row, row);
 				
@@ -129,7 +130,7 @@ public class OperationListPanel extends JPanel implements ActionListener{
 			public Class getColumnClass(int c) {
 				return getValueAt(0, c).getClass();
 			}			
-		}; //TableModel tableModel = new AbstractTableModel(){
+		}; //TableModel tableModel = new AbstractTableModel() {
 
 		table.setModel(tableModel);
 
@@ -138,13 +139,13 @@ public class OperationListPanel extends JPanel implements ActionListener{
 		/* Сustom column width: */
 		TableColumn column = null;
 		column = table.getColumnModel().getColumn(0);
-    	column.setPreferredWidth(200); 
+    	column.setPreferredWidth(100); 
     	column = table.getColumnModel().getColumn(1);
         column.setPreferredWidth(100);
         column = table.getColumnModel().getColumn(2);
     	column.setPreferredWidth(200); 
     	column = table.getColumnModel().getColumn(3);
-        column.setPreferredWidth(500);
+        column.setPreferredWidth(300);
 
 		JScrollPane scrollPane = new JScrollPane(table);
 
@@ -153,7 +154,7 @@ public class OperationListPanel extends JPanel implements ActionListener{
 		
 		add("North", scrollPane);
 				
-		JPanel southPanel = new JPanel();
+		JPanel southPanel = new JPanel();		
 		
 		JButton addButton = new JButton("Add");		
 		addButton.addActionListener(this);
@@ -173,25 +174,28 @@ public class OperationListPanel extends JPanel implements ActionListener{
 	@Override
 	public void actionPerformed(ActionEvent e) {
 		int selectedRow;
-		/*
-		switch(e.getActionCommand()){
+		
+		switch(e.getActionCommand()) {
 			case "Add": 
-				AddGroupDialog addGroupDialog = new AddGroupDialog(frame, groupTableModel);
-				addGroupDialog.show();
+				System.out.println("Befor: " + dataList.size());
+				AddOperationDialog addOperationDialog = new AddOperationDialog(frame, tableModel);
+				addOperationDialog.show();
+				dataList = Operations.getInstance().getList();
 				table.repaint();
+				System.out.println("Ater: " + dataList.size());
 				break;
 			case "Change": 
-				selectedRow = table.getSelectedRow();
+				/*selectedRow = table.getSelectedRow();
 				if(selectedRow == -1){break;}	//Do nothing if don't selected any row
 				Group groupToChange = new Group();		
 				groupToChange.setNumber((Integer)table.getValueAt(selectedRow, 0));
 				groupToChange.setFaculty((String)table.getValueAt(selectedRow, 1));	
-				ChangeGroupDialog changeGroupDialog	= new ChangeGroupDialog(frame, groupTableModel, selectedRow, groupToChange);
+				ChangeGroupDialog changeGroupDialog	= new ChangeGroupDialog(frame, tableModel, selectedRow, groupToChange);
 				changeGroupDialog.show();	
-				table.repaint();
+				table.repaint();*/
 				break;
 			case "Delete": 				
-				selectedRow = table.getSelectedRow();
+				/*selectedRow = table.getSelectedRow();
 				if(selectedRow == -1){break;}	//Do nothing if don't selected any row				
 				Group groupToDelete = new Group();
 				int groupNumber = (Integer)table.getValueAt(selectedRow, 0);		
@@ -200,13 +204,13 @@ public class OperationListPanel extends JPanel implements ActionListener{
 				StudentDao studentDao = new StudentDao();
 				long groupId = studentDao.getGroupIdForNumber(Integer.toString(groupNumber));
 				groupToDelete.setId(groupId);
-				DeleteGroupDialog deleteGroupDialog = new DeleteGroupDialog(frame, groupTableModel, selectedRow, groupToDelete);
+				DeleteGroupDialog deleteGroupDialog = new DeleteGroupDialog(frame, tableModel, selectedRow, groupToDelete);
 				deleteGroupDialog.show();	
-				table.repaint();
+				table.repaint();*/
 				break;	
 			default:
 				break;
 		}
-		*/
+		
 	}
 }
