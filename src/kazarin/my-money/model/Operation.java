@@ -13,6 +13,8 @@ import java.text.ParseException;
  * An operation.
 */
 public class Operation {
+
+    private SimpleDateFormat dateFormat;
     
     /**
      * The operation id.
@@ -51,6 +53,7 @@ public class Operation {
         if (howMuch == null || date == null) throw new IllegalArgumentException(
                                                     "howMuch or date == null");
         
+        dateFormat = new SimpleDateFormat("dd-MM-yyyy", Locale.ENGLISH);
         this.id = id;
         this.howMuch = howMuch;
         this.date = date;
@@ -80,7 +83,8 @@ public class Operation {
     /**
      * Constructor for adding and changing.
      */
-    public Operation() {        
+    public Operation() { 
+        dateFormat = new SimpleDateFormat("dd-MM-yyyy", Locale.ENGLISH);
         this.id = -1;        
         this.howMuch = null;
         this.date = null;
@@ -107,6 +111,13 @@ public class Operation {
      */
     public final  Date getDate() {
         return date;
+    }
+
+    /**
+     * @return date string
+     */
+    public final  String getDateStr() {
+        return dateFormat.format(date);
     }
 
     /**
@@ -170,8 +181,6 @@ public class Operation {
         if (dateString == null)
                             throw new IllegalArgumentException("date == null");
 
-        SimpleDateFormat dateFormat =
-                            new SimpleDateFormat("dd-MM-yyyy", Locale.ENGLISH);
         try {               
             this.date = dateFormat.parse(dateString);
         } catch (ParseException pe) {
@@ -215,8 +224,7 @@ public class Operation {
         if (description != null) {
             descriptionStr = description;
         }
-        SimpleDateFormat dateFormat =
-                            new SimpleDateFormat("dd-MM-yyyy", Locale.ENGLISH);
+        
         return "add " + howMuch.toString() + ":" 
                          + dateFormat.format(date) + ":"
                          + descriptionStr + "#" + tagsStr;
@@ -231,8 +239,7 @@ public class Operation {
         if (description != null) {
             descriptionStr = description;
         }
-        SimpleDateFormat dateFormat =
-                            new SimpleDateFormat("dd-MM-yyyy", Locale.ENGLISH);
+        
         return id + ": " + howMuch.toString() + " руб " 
                          + dateFormat.format(date) + " "
                          + descriptionStr + " #: " + tagsStr;

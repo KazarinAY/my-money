@@ -1,6 +1,10 @@
+/*
+ * ChangeOperationDialog
+ */
 package kazarin.my_money.gui;
 
 import kazarin.my_money.model.Operations;
+import kazarin.my_money.model.Operation;
 import kazarin.my_money.model.WrongCommandException;
 
 import javax.swing.JFrame;
@@ -16,9 +20,9 @@ import java.math.BigDecimal;
 import java.util.Date;
 
 /**
- *  Is a class for creating a dialog window for adding a operation
+ * Is a class for creating a dialog window for changing a group
  */
-public class AddOperationDialog {
+public class ChangeOperationDialog {
 	private JFrame frame;
 	private JDialog dialog;
 	private JTextField textFieldHowMuch;
@@ -26,24 +30,30 @@ public class AddOperationDialog {
 	private JTextField textFieldDescription;
 	private JTextField textFieldTags;
 	private TableModel tableModel;
+	private int row;
+	private Operation oldOperation;
 	
 	/**
- 	 * Constructs an AddOperationDialog
+ 	 * Constructs an ChangeOperationDialog
  	 *
  	 * @param frame
- 	 * @param data model
+ 	 * @param operation data model
+ 	 * @param row to change
+ 	 * @param operation to change
  	 */
-	public AddOperationDialog(JFrame frame, TableModel tableModel){
+	public ChangeOperationDialog(JFrame frame, TableModel tableModel, 
+														int row, Operation oldOperation){
 		this.frame = frame;	
 		this.tableModel = tableModel;
+		this.row = row;
+		this.oldOperation = oldOperation;
 	}
 	
 	/**
- 	 * Shows add operation dialog window
+ 	 * Shows change operation dialog window
  	 */
 	public void show(){
-		dialog = new JDialog(frame, "Add operation:", true);
-	
+		dialog = new JDialog(frame, "Change operation:", true);
 		dialog.setLayout(new GridLayout(5, 2));
 		dialog.setLocation(300, 350);
 		
@@ -51,30 +61,34 @@ public class AddOperationDialog {
 		dialog.add(labelHowMuch);
 		
 		textFieldHowMuch = new JTextField(20);
+		textFieldHowMuch.setText(String.valueOf(oldOperation.getHowMuch()));		
 		dialog.add(textFieldHowMuch);
 		
 		JLabel labelDate = new JLabel("Date:");
 		dialog.add(labelDate);
 		
 		textFieldDate = new JTextField(20);
+		textFieldDate.setText(oldOperation.getDateStr());
 		dialog.add(textFieldDate);
 
 		JLabel labelDescription = new JLabel("Description:");
 		dialog.add(labelDescription);
 		
 		textFieldDescription = new JTextField(20);
+		textFieldDescription.setText(oldOperation.getDescription());
 		dialog.add(textFieldDescription);
-		
-		JLabel labelTags = new JLabel("Date:");
+
+		JLabel labelTags = new JLabel("Tags:");
 		dialog.add(labelTags);
 		
 		textFieldTags = new JTextField(20);
+		textFieldTags.setText(oldOperation.getTagsStr());
 		dialog.add(textFieldTags);
 
 		ActionListener actionListener = new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				switch (e.getActionCommand()){
+				switch(e.getActionCommand()){
 					case "OK": 
 						String howMuch = textFieldHowMuch.getText();
 						if (!howMuch.trim().matches("[+-]?(?:\\d+(?:\\.\\d+)?|\\.\\d+)")) {
@@ -83,7 +97,7 @@ public class AddOperationDialog {
 						}
 						String date = textFieldDate.getText();
 						if(date.equals("")){
-							textFieldDate.setText("Enter the date name!");
+							textFieldDate.setText("Enter the date!");
 							break;
 						}
 						if (!date.trim().matches("\\d{2}-\\d{2}-\\d{4}")) {
@@ -91,19 +105,20 @@ public class AddOperationDialog {
 							break;
 						}
 						String description = textFieldDescription.getText();
-						String tags = textFieldTags.getText();
+						String tags = textFieldTags.getText();						
 						
-						String command = String.format("add %s:%s:%s#%s",
-														howMuch, date, description,tags);
+						String command = String.format("change %d:%s:%s:%s#%s",
+											oldOperation.getId(), howMuch, date, description,tags);
+	//LOG					System.out.println("Command: " + command);
 						
 						Operations operations = Operations.getInstance();
 						try {
-							operations.add(command);
+							operations.change(command);
 						} catch (WrongCommandException wce) {
 							textFieldHowMuch.setText("Wrong command!");
 							break;
 						}
-						
+										
 						dialog.dispose();
 						
 						break;
@@ -124,6 +139,6 @@ public class AddOperationDialog {
 		
 		dialog.pack();
 		dialog.setVisible(true);	
-	}	
+	}
 	
 }

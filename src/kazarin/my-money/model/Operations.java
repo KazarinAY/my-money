@@ -156,11 +156,12 @@ public final class Operations {
      */
     public void delete(String line) throws WrongCommandException {
         if (line == null || line.equals("")) throw new WrongCommandException();
-        
+
         if (!line.startsWith("delete ")) throw new WrongCommandException();
         
         line = line.substring(7);  //size of "delete "
         line = line.trim();
+
         try {            
             int id = Integer.parseInt(line);            
             

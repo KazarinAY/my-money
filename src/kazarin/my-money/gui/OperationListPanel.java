@@ -54,7 +54,8 @@ public class OperationListPanel extends JPanel implements ActionListener{
 			private String[] columnNames = {"How Much",
 								            "Date",
 								            "Description",
-								            "Tags"
+								            "Tags",
+								            "Id"
 								            };		
 			
 			
@@ -82,7 +83,8 @@ public class OperationListPanel extends JPanel implements ActionListener{
 					case 0: return operation.getHowMuch();
 					case 1: return operation.getDate();
 					case 2: return operation.getDescription();
-					case 3: return operation.getTags();
+					case 3: return operation.getTagsStr();
+					case 4: return operation.getId();
 					default: return "";
 				}		
 			}
@@ -109,7 +111,9 @@ public class OperationListPanel extends JPanel implements ActionListener{
 						case 2: operation.setDescription((String)aValue);
 								break;
 						case 3: operation.setTags((String[])aValue);
-								break;	
+								break;
+						case 4: operation.setId((Integer)aValue);
+								break;
 					}
 		        	fireTableDataChanged();		
 				}				
@@ -177,36 +181,40 @@ public class OperationListPanel extends JPanel implements ActionListener{
 		
 		switch(e.getActionCommand()) {
 			case "Add": 
-				System.out.println("Befor: " + dataList.size());
 				AddOperationDialog addOperationDialog = new AddOperationDialog(frame, tableModel);
 				addOperationDialog.show();
 				dataList = Operations.getInstance().getList();
-				table.repaint();
-				System.out.println("Ater: " + dataList.size());
+				table.repaint();				
 				break;
 			case "Change": 
-				/*selectedRow = table.getSelectedRow();
+				selectedRow = table.getSelectedRow();
 				if(selectedRow == -1){break;}	//Do nothing if don't selected any row
-				Group groupToChange = new Group();		
-				groupToChange.setNumber((Integer)table.getValueAt(selectedRow, 0));
-				groupToChange.setFaculty((String)table.getValueAt(selectedRow, 1));	
-				ChangeGroupDialog changeGroupDialog	= new ChangeGroupDialog(frame, tableModel, selectedRow, groupToChange);
-				changeGroupDialog.show();	
-				table.repaint();*/
+				Operation operationToChange = new Operation();
+				operationToChange.setHowMuch((BigDecimal)table.getValueAt(selectedRow, 0));
+				operationToChange.setDate((Date)table.getValueAt(selectedRow, 1));
+				operationToChange.setDescription((String)table.getValueAt(selectedRow, 2));
+				operationToChange.setTags(((String )table.getValueAt(selectedRow, 3)).split(","));
+				operationToChange.setId((Integer )table.getValueAt(selectedRow, 4));
+				ChangeOperationDialog changeOperationDialog	= new ChangeOperationDialog(
+												frame, tableModel, selectedRow, operationToChange);
+				changeOperationDialog.show();
+				dataList = Operations.getInstance().getList();
+				table.repaint();
 				break;
 			case "Delete": 				
-				/*selectedRow = table.getSelectedRow();
+				selectedRow = table.getSelectedRow();
 				if(selectedRow == -1){break;}	//Do nothing if don't selected any row				
-				Group groupToDelete = new Group();
-				int groupNumber = (Integer)table.getValueAt(selectedRow, 0);		
-				groupToDelete.setNumber(groupNumber);
-				groupToDelete.setFaculty((String)table.getValueAt(selectedRow, 1));
-				StudentDao studentDao = new StudentDao();
-				long groupId = studentDao.getGroupIdForNumber(Integer.toString(groupNumber));
-				groupToDelete.setId(groupId);
-				DeleteGroupDialog deleteGroupDialog = new DeleteGroupDialog(frame, tableModel, selectedRow, groupToDelete);
-				deleteGroupDialog.show();	
-				table.repaint();*/
+				Operation operationToDelete = new Operation();
+				operationToDelete.setHowMuch((BigDecimal)table.getValueAt(selectedRow, 0));
+				operationToDelete.setDate((Date)table.getValueAt(selectedRow, 1));
+				operationToDelete.setDescription((String)table.getValueAt(selectedRow, 2));
+				operationToDelete.setTags(((String )table.getValueAt(selectedRow, 3)).split(","));
+				operationToDelete.setId((Integer )table.getValueAt(selectedRow, 4));
+				DeleteOperationDialog deleteOperationDialog = new DeleteOperationDialog(
+												frame, tableModel, selectedRow, operationToDelete);
+				deleteOperationDialog.show();
+				dataList = Operations.getInstance().getList();
+				table.repaint();
 				break;	
 			default:
 				break;
