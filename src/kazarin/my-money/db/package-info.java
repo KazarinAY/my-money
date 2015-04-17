@@ -1,1 +1,1 @@
-package kazarin.db;
+package kazarin.my_money.db;
