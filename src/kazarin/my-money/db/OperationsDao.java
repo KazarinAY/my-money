@@ -5,6 +5,9 @@ package kazarin.my_money.db;
 
 import kazarin.my_money.model.Operation;
 
+import java.util.logging.*;
+import java.io.IOException;
+
 import java.sql.DriverManager;
 import java.sql.Connection;
 import java.sql.SQLException;
@@ -23,6 +26,10 @@ import java.util.Properties;
  */
 public class OperationsDao {
 
+	private static final Logger logger =
+        Logger.getLogger(OperationsDao.class.getName());
+    FileHandler fh;  
+
 	private String user = "guest";
 	private String password = "12345678";	
 	private String url = "jdbc:mysql://localhost/MYMONEY";
@@ -36,6 +43,23 @@ public class OperationsDao {
  	 */
 	public OperationsDao(){	
 		super();
+		try {  
+	        // This block configure the logger with handler and formatter  
+	        fh = new FileHandler("/tmp/mymoney.log");  
+	        logger.addHandler(fh);
+	        SimpleFormatter formatter = new SimpleFormatter();  
+	        fh.setFormatter(formatter); 
+	        logger.setUseParentHandlers(false); 
+
+	        // the following statement is used to log any messages  
+	        logger.info("Start logging...");  
+
+	    } catch (SecurityException e) {  
+	        e.printStackTrace();  
+	    } catch (IOException e) {  
+	        e.printStackTrace();  
+	    }  
+
 		try{
             Class.forName(driver);
         }catch (ClassNotFoundException e){
@@ -50,6 +74,7 @@ public class OperationsDao {
  	
 	public List<Operation> getAll(){
 		String sql = "SELECT * FROM operations;";
+		logger.log(Level.INFO, "SQL: " + sql);
 		List<Operation> list = new ArrayList<Operation>();
 		ResultSet rs = null;
 		try{	
@@ -95,7 +120,7 @@ public class OperationsDao {
 									+ "(op_how_much, op_date, op_description, op_tags) "
 									+ "VALUES ('%s', '%s', \"%s\", \"%s\");",
 									howMuch, date, description, tags);
-		System.out.println("SQL: " + sql);
+		logger.log(Level.INFO, "SQL: " + sql);
 		
 		try{
 			connection = DriverManager.getConnection(url, properties);
@@ -135,7 +160,7 @@ public class OperationsDao {
 									description, tags,
 									idStr);
 		
-		System.out.println("SQL: " + sql);
+		logger.log(Level.INFO, "SQL: " + sql);
 		
 		try{
 			connection = DriverManager.getConnection(url, properties);
@@ -162,7 +187,7 @@ public class OperationsDao {
 		String id = String.valueOf(operation.getId());
 		
 		String sql = String.format("DELETE FROM operations WHERE op_id='%s';", id);
-		System.out.println("SQL: " + sql);
+		logger.log(Level.INFO, "SQL: " + sql);
 		
 		try{
 			connection = DriverManager.getConnection(url, properties);
