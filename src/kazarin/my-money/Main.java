@@ -24,7 +24,7 @@ public final class Main {
 			throws IOException, ClassNotFoundException {
 
 		OperationsDao opDao = new OperationsDao();
-		System.out.println("My Money, DAO:");
+		System.out.println("My Money:");
 		
 		Environment env = Environment.getInstance();		
 		Operations ops = Operations.getInstance();

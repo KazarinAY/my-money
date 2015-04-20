@@ -1,6 +1,12 @@
 package kazarin.my_money.model;
 
 import kazarin.my_money.db.OperationsDao;
+import kazarin.my_money.db.Dao;
+import kazarin.my_money.db.StubDao;
+
+import kazarin.my_money.MyLogger;
+
+import java.util.logging.Level;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -14,6 +20,7 @@ import java.io.ObjectInput;
 import java.util.Iterator;
 import java.util.StringTokenizer;
 import java.text.ParseException;
+import java.util.Arrays;
 
 /**
  * Operations.
@@ -21,6 +28,7 @@ import java.text.ParseException;
  */
 public final class Operations {
 
+    private Dao<Operation> dao;
     /**
      * An instance of Operations.
      */
@@ -42,6 +50,20 @@ public final class Operations {
     private Operations() {
         list = new ArrayList<>();
         dateFormat = new SimpleDateFormat("dd-MM-yyyy", Locale.ENGLISH);
+        dao = new OperationsDao();
+    }
+
+    /**
+     * Constructor.
+     */
+    private Operations(boolean isStub) {
+        if (isStub) {
+            dao = new StubDao();
+        } else {
+            dao = new OperationsDao();
+        }
+        list = new ArrayList<>();
+        dateFormat = new SimpleDateFormat("dd-MM-yyyy", Locale.ENGLISH);        
     }
 
     /**
@@ -51,6 +73,17 @@ public final class Operations {
     public static Operations getInstance() {
         if (instance == null) {
             instance = new Operations();
+        }
+        return instance;
+    }
+
+    /**
+     * Gets instance of Operations.
+     * @return instance
+     */
+    public static Operations getInstance(boolean isStub) {
+        if (instance == null) {
+            instance = new Operations(isStub);
         }
         return instance;
     }
@@ -94,9 +127,8 @@ public final class Operations {
      * @param line      command line
      * @throws WrongCommandException if bad command line
      */
-    public void add(String line) throws WrongCommandException {
-//LOG        System.out.println("************ADD*****************" );
-//LOG        System.out.println("Line: " + line);
+    public void add(String line) throws WrongCommandException {        
+        MyLogger.log(Level.INFO,"ADD: Line: " + line);
         if (line == null || line.equals("")) throw new WrongCommandException();
 
         if (!line.startsWith("add ")) throw new WrongCommandException();
@@ -126,19 +158,18 @@ public final class Operations {
         }
 
         String[] tokens = line.split(":");        
-//LOG        System.out.println("Line to parse: " + line);
+        MyLogger.log(Level.INFO, "ADD: Line to parse: " + line);
         Operation newOp = parseOperation(tokens);
 
-//LOG        System.out.println("after parse: " + newOp.getHowMuch() + " " + newOp.getDate() + " "
-//LOG                                                    + newOp.getDescription() );
+        MyLogger.log(Level.INFO, "ADD: after parse: " + newOp.getHowMuch() + " " + newOp.getDate() + " "
+                                                    + newOp.getDescription() );
         
         if (newOp.getHowMuch() == null) throw new WrongCommandException();
         if (newOp.getDate() == null) newOp.setDate(new Date()); 
         newOp.setTags(tagsArr);
-        
-        OperationsDao opDao = new OperationsDao();
-        opDao.add(newOp);
-        setList(opDao.getAll());
+
+        dao.add(newOp);
+        setList(dao.getAll());
     }
 
     private Date parseDate(String stringDate) throws WrongCommandException{
@@ -155,6 +186,7 @@ public final class Operations {
      * @throws WrongCommandException if bad command line
      */
     public void delete(String line) throws WrongCommandException {
+        MyLogger.log(Level.INFO,"DELETE: Line: " + line);
         if (line == null || line.equals("")) throw new WrongCommandException();
 
         if (!line.startsWith("delete ")) throw new WrongCommandException();
@@ -165,18 +197,17 @@ public final class Operations {
         try {            
             int id = Integer.parseInt(line);            
             
-            Iterator iterator = list.iterator();
-            
-            OperationsDao opDao = new OperationsDao();
+            Iterator<Operation> iterator = list.iterator();
+
             while (iterator.hasNext()) {
-                Operation op = (Operation) iterator.next();
+                Operation op = iterator.next();
                 
                 if (op.getId() == id) {                    
-                    opDao.delete(op);                 
+                    dao.delete(op);                 
                     break;
                 }
             }
-            setList(opDao.getAll());
+            setList(dao.getAll());
 
         } catch (NumberFormatException e) {
             throw new WrongCommandException();
@@ -189,9 +220,8 @@ public final class Operations {
      * @param line      command line
      * @throws WrongCommandException if bad command line
      */
-    public void change(String line) throws WrongCommandException {
-//LOG        System.out.println("************CHANGE*****************" );
-//LOG        System.out.println("Line: " + line);
+    public void change(String line) throws WrongCommandException {        
+        MyLogger.log(Level.INFO, "CHANGE: Line: " + line);
         if (line == null || line.equals("")) throw new WrongCommandException();
 
         if (!line.startsWith("change ")) throw new WrongCommandException();
@@ -207,15 +237,25 @@ public final class Operations {
         if (bars == 1) {
             if (line.indexOf('#') < line.lastIndexOf(':')) throw new WrongCommandException();
 
-            String argsLine = line.split("#")[1];
-            newTags = argsLine.split(",");
+            if (line.indexOf('#') != line.length() - 1) {
+                String argsLine = line.split("#")[1];
+                MyLogger.log(Level.INFO, "CHANGE: argsLine: " + argsLine);
+                newTags = argsLine.split(",");
+            } else {
+                newTags = new String[0];
+            }           
 
             line = line.split("#")[0];
         }        
 
         int idToFind = -1;        
+        if (line.lastIndexOf(":") == line.length() - 1) {
+            line += " ";
+        }
 
         String[] newTokens = line.split(":");
+        MyLogger.log(Level.INFO, "CHANGE: newTokens = " + newTokens.length + " "
+                                                                    + Arrays.toString(newTokens));
         if (newTokens.length > 0) {
             try {
                 idToFind = Integer.parseInt(newTokens[0].trim());
@@ -223,16 +263,21 @@ public final class Operations {
                 throw new WrongCommandException();
             }
         }
-        System.out.println("idToFind: " + idToFind);
-//LOG        System.out.println("size(): " + size());
+        MyLogger.log(Level.INFO, "CHANGE: idToFind: " + idToFind);
+
+        MyLogger.log(Level.INFO, "CHANGE: size(): " + size());
+
         int index = findOperationIndexById(idToFind);
-        System.out.println("index: " + index);
+        MyLogger.log(Level.INFO, "CHANGE: index: " + index);
         if (index == -1) throw new WrongCommandException();
 
         String[] parameters = new String[newTokens.length - 1];
         for (int i = 0; i < parameters.length; i++) {
             parameters[i] = newTokens[i + 1];
         }
+
+        MyLogger.log(Level.INFO, "CHANGE: parameters = " + parameters.length + " "
+                                                                    + Arrays.toString(parameters));
         Operation changeOp = parseOperation(parameters);       
 
         Operation operationToChange = list.get(index);
@@ -241,36 +286,40 @@ public final class Operations {
         if (changeOp.getDate() != null) operationToChange.setDate(changeOp.getDate());
         if (changeOp.getDescription() != null) operationToChange.setDescription(changeOp.getDescription());
         if (newTags != null) operationToChange.setTags(newTags);
-        OperationsDao opDao = new OperationsDao();
-        opDao.update(operationToChange);
-        //list.set(index, operationToChange);
+        
+        dao.update(operationToChange);
+
     }
 
     private Operation parseOperation(String[] prmtrs) throws WrongCommandException {
-//LOG        System.out.println("\tparseOperation start: ");
+        MyLogger.log(Level.INFO, "\tparseOperation start: ");      
+
         Operation operation = new Operation();
         if (prmtrs.length > 0) {
+            MyLogger.log(Level.INFO, "\tparseOperation 0: " + prmtrs[0]);
             parseWordForOperation(operation, prmtrs, 0);
         }
 
         if (prmtrs.length > 1) {
+            MyLogger.log(Level.INFO, "\tparseOperation 1: " + prmtrs[1]);
             parseWordForOperation(operation, prmtrs, 1);
         }
 
         if (prmtrs.length > 2) {
+            MyLogger.log(Level.INFO, "\tparseOperation 2: " + prmtrs[2]);
             parseWordForOperation(operation, prmtrs, 2);
         }
 
-//LOG        System.out.println("\tparseOperation end:" + operation.getHowMuch() + " " + operation.getDate() + " "
-//LOG                                                    + operation.getDescription() );
+        MyLogger.log(Level.INFO, "\tparseOperation end:" + operation.getHowMuch() + " " + operation.getDate() + " "
+                                                    + operation.getDescription() );
         return operation;
     }
 
     private void parseWordForOperation(Operation operation, String[] prmtrs, int index) 
                                                                 throws WrongCommandException {
         // "[+-]?(?:\\d+(?:\\.\\d*)?|\\.\\d+)(?:[eE][+-]?\\d+)?"
-//LOG        System.out.println("\t\tparseWordForOperation: " + prmtrs[index]);
-        if (prmtrs[index].trim().equals("")) throw new WrongCommandException();
+        MyLogger.log(Level.INFO, "\t\tparseWordForOperation: " + prmtrs[index]);
+        //if (prmtrs[index].trim().equals("")) throw new WrongCommandException();
 
         if (prmtrs[index].trim().matches("[+-]?(?:\\d+(?:\\.\\d+)?|\\.\\d+)")) {
             if (operation.getHowMuch() != null) throw new WrongCommandException();
@@ -286,7 +335,7 @@ public final class Operations {
             if (operation.getDescription() != null) throw new WrongCommandException();
             operation.setDescription(prmtrs[index].trim());
         }
-//LOG        System.out.println("\t\tparseWordForOperation: good");
+        MyLogger.log(Level.INFO, "\t\tparseWordForOperation: good");
     }
 
     /**
@@ -347,5 +396,5 @@ public final class Operations {
 
         return true;
     }
-    
+
 }

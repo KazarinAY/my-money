@@ -4,9 +4,9 @@
 package kazarin.my_money.db;
 
 import kazarin.my_money.model.Operation;
+import kazarin.my_money.MyLogger;
 
-import java.util.logging.*;
-import java.io.IOException;
+import java.util.logging.Level;
 
 import java.sql.DriverManager;
 import java.sql.Connection;
@@ -24,11 +24,9 @@ import java.util.Properties;
 /**
  * Provides access to the operations table in database.
  */
-public class OperationsDao {
+public class OperationsDao implements Dao<Operation>{
 
-	private static final Logger logger =
-        Logger.getLogger(OperationsDao.class.getName());
-    FileHandler fh;  
+	
 
 	private String user = "guest";
 	private String password = "12345678";	
@@ -42,23 +40,7 @@ public class OperationsDao {
 	 * Constracts the OperationsDao.
  	 */
 	public OperationsDao(){	
-		super();
-		try {  
-	        // This block configure the logger with handler and formatter  
-	        fh = new FileHandler("/tmp/mymoney.log");  
-	        logger.addHandler(fh);
-	        SimpleFormatter formatter = new SimpleFormatter();  
-	        fh.setFormatter(formatter); 
-	        logger.setUseParentHandlers(false); 
-
-	        // the following statement is used to log any messages  
-	        logger.info("Start logging...");  
-
-	    } catch (SecurityException e) {  
-	        e.printStackTrace();  
-	    } catch (IOException e) {  
-	        e.printStackTrace();  
-	    }  
+		super();		
 
 		try{
             Class.forName(driver);
@@ -72,9 +54,10 @@ public class OperationsDao {
         properties.setProperty("characterEncoding","UTF-8");
 	}
  	
+ 	@Override
 	public List<Operation> getAll(){
 		String sql = "SELECT * FROM operations;";
-		logger.log(Level.INFO, "SQL: " + sql);
+		MyLogger.log(Level.INFO, "SQL: " + sql);
 		List<Operation> list = new ArrayList<Operation>();
 		ResultSet rs = null;
 		try{	
@@ -109,6 +92,7 @@ public class OperationsDao {
 		return list;	
 	}
 
+	@Override
 	public void add(Operation operation){
 		String howMuch = operation.getHowMuch().toString();
 		SimpleDateFormat dateFormat =
@@ -120,7 +104,7 @@ public class OperationsDao {
 									+ "(op_how_much, op_date, op_description, op_tags) "
 									+ "VALUES ('%s', '%s', \"%s\", \"%s\");",
 									howMuch, date, description, tags);
-		logger.log(Level.INFO, "SQL: " + sql);
+		MyLogger.log(Level.INFO, "SQL: " + sql);
 		
 		try{
 			connection = DriverManager.getConnection(url, properties);
@@ -143,6 +127,7 @@ public class OperationsDao {
 		}
 	}
 
+	@Override
 	public void update(Operation oldOperation){
 		String idStr = String.valueOf(oldOperation.getId());
 		String howMuch = oldOperation.getHowMuch().toString();
@@ -160,7 +145,7 @@ public class OperationsDao {
 									description, tags,
 									idStr);
 		
-		logger.log(Level.INFO, "SQL: " + sql);
+		MyLogger.log(Level.INFO, "SQL: " + sql);
 		
 		try{
 			connection = DriverManager.getConnection(url, properties);
@@ -183,11 +168,12 @@ public class OperationsDao {
 		}	
 	}
 
+	@Override
 	public void delete(Operation operation){
 		String id = String.valueOf(operation.getId());
 		
 		String sql = String.format("DELETE FROM operations WHERE op_id='%s';", id);
-		logger.log(Level.INFO, "SQL: " + sql);
+		MyLogger.log(Level.INFO, "SQL: " + sql);
 		
 		try{
 			connection = DriverManager.getConnection(url, properties);

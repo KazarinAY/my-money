@@ -7,6 +7,10 @@ import kazarin.my_money.model.Operations;
 import kazarin.my_money.model.Operation;
 import kazarin.my_money.model.WrongCommandException;
 
+import kazarin.my_money.MyLogger;
+
+import java.util.logging.Level;
+
 import javax.swing.JFrame;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener; 
@@ -108,8 +112,9 @@ public class ChangeOperationDialog {
 						String tags = textFieldTags.getText();						
 						
 						String command = String.format("change %d:%s:%s:%s#%s",
-											oldOperation.getId(), howMuch, date, description,tags);
-	//LOG					System.out.println("Command: " + command);
+											oldOperation.getId(), howMuch, date, description, tags);
+						
+						MyLogger.log(Level.INFO, "Command: " + command);
 						
 						Operations operations = Operations.getInstance();
 						try {

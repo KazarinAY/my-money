@@ -10,7 +10,7 @@ import java.math.BigDecimal;
 import java.io.IOException;
 
 public class TestOperations {	
-	Operations operations = Operations.getInstance();
+	Operations operations = Operations.getInstance(true);
 
 //ADD
 
@@ -146,7 +146,7 @@ public class TestOperations {
 
 	@Test
 	public void testAdd26() throws WrongCommandException {		
-		operations.add("add 13-04-2015 : test description : -135  # test tag1, testTag2");
+		operations.add("add 13-04-2015 : test description : -135  # test tag1, testTag2");		
 	}
 
 	@Test(expected=WrongCommandException.class)
@@ -181,7 +181,7 @@ public class TestOperations {
 		operations.delete("delete wer");
 	}
 
-	@Test(expected=WrongCommandException.class)
+	@Test
 	public void testDelete4() throws WrongCommandException {
 		operations.delete("delete " + (operations.size() + 10));
 	}
@@ -196,15 +196,13 @@ public class TestOperations {
 		int size = operations.size();
 		if (size == 0) return;
 		operations.delete("delete " + (size - 1));
-		assertEquals(operations.size(), size - 1);
 	}
 
 	@Test
 	public void testDelete7() throws WrongCommandException {
 		int size = operations.size();
 		if (size == 0) return;
-		operations.delete("delete " + (size / 2));
-		assertEquals(operations.size(), size - 1);
+		operations.delete("delete " + (size / 2));			
 	}
 
 //CHANGE
@@ -250,11 +248,11 @@ public class TestOperations {
 		operations.change("change " + (size/2) + " 125 : description");
 	}
 
-	@Test(expected=WrongCommandException.class)
+	@Test
 	public void testChange7() throws WrongCommandException {
 		int size = operations.size();
 		if (size == 0) return;
-		operations.change("change " + (size/2) + ": ");
+		operations.change("change " + (size/2) + ": "); //changes description
 	}
 
 	@Test(expected=WrongCommandException.class)
@@ -307,7 +305,7 @@ public class TestOperations {
 		operations.change("change " + (size/2) + ": 125 : 12-12-2004: new description ");
 	}
 
-	@Test(expected=WrongCommandException.class)
+	@Test
 	public void testChange15() throws WrongCommandException {		
 		int size = operations.size();
 		if (size == 0) return;
@@ -380,4 +378,5 @@ public class TestOperations {
 		if (size == 0) return;
 		operations.change("change " + (size/2) + ": -125");
 	}
+
 }
