@@ -2,7 +2,14 @@
 * Simple accounting.
 
 Instructions
+
 ---------------------------------------------------------
+
+First, create database.
+Then, ctreate operations table - see create_table.sql
+
+---------------------------------------------------------
+
 To run in console mode:
 	my-money$ bash runConsole.sh
 To run in GUI mode:
@@ -41,3 +48,13 @@ saveto - saves operations list to the file.
 loadfrom - loads operations list from the file.
 	synopsys: loadfrom filename
 	example: loadfrom /tmp/my_file.txt
+
+---------------------------------------------------------
+
+Example of "Enter information":
+	user = "guest";
+    password = "12345678";   
+    url = "jdbc:mysql://localhost/MYMONEY";
+    driver = "com.mysql.jdbc.Driver";
+
+---------------------------------------------------------

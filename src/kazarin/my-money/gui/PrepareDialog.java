@@ -20,7 +20,7 @@ public class PrepareDialog extends JDialog {
 		private JTextField textFieldUrl;
 		private JTextField textFieldDriver;
 	public PrepareDialog(JFrame frame) {
-		super(frame, "Preparing...", true);
+		super(frame, "Enter information:", true);
 		setLayout(new GridLayout(5, 2));
 		setLocation(300, 350);
 		

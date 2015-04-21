@@ -36,11 +36,13 @@ public class OperationsDao implements Dao<Operation>{
 	Properties propertiesDB = new Properties();
 	
 	private Connection connection;
+
+	private boolean ok; //true when environment is good
  
  	/**
 	 * Constracts the OperationsDao.
  	 */
-	public OperationsDao(){	
+	public OperationsDao() {	
 		super();
 		try {
             logger = Logger.getLogger(OperationsDao.class.getName());
@@ -58,12 +60,40 @@ public class OperationsDao implements Dao<Operation>{
 		environment = Environment.getInstance();
         propertiesDB = environment.getPropertiesDB();
 		url = propertiesDB.getProperty("url");
-		try{
+		
+		try {
 			logger.info("DRIVER: " + propertiesDB.getProperty("driver"));
             Class.forName(propertiesDB.getProperty("driver"));
-        }catch (ClassNotFoundException e){
-            logger.log(Level.WARNING, "ERROR: failed to find driver.", e);            
+            logger.info("DRIVER... OK");
+        }catch (ClassNotFoundException e) {
+            logger.log(Level.WARNING, "ERROR: failed to find driver.", e);
+            ok = false;            
         }
+        
+        try {	
+			connection = DriverManager.getConnection(url, propertiesDB);
+			logger.info("CONNECTION... OK");
+		} catch(SQLException e) {			
+			logger.log(Level.WARNING, "ERROR: failed to get connection.", e);
+			logger.log(Level.WARNING, "\turl=" + url
+								+ "\n\tuser=" + propertiesDB.getProperty("user")
+								+ "\n\tpassword=" + propertiesDB.getProperty("password"));
+			ok = false;			
+		} finally {
+			if (connection != null) {
+				try {
+					connection.close();
+				} catch (SQLException e) {
+					logger.log(Level.WARNING, "ERROR: failed to close connection.", e);
+				}				
+			}
+		}
+		ok = true;
+	}
+
+	public boolean isOk() {
+		logger.info("isOk=" + String.valueOf(ok));
+		return this.ok;
 	}
  	
  	@Override
@@ -89,8 +119,7 @@ public class OperationsDao implements Dao<Operation>{
 
 		} catch(SQLException e){
 			logger.warning("ERROR: failed to get all.");
-			logger.log(Level.WARNING, "ERROR: failed to get resultSet.", e);
-			e.printStackTrace();
+			logger.log(Level.WARNING, "ERROR: failed to get resultSet.", e);			
 		} finally {
 			if (connection != null) {
 				try {

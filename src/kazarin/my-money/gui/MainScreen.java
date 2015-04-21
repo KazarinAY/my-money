@@ -6,7 +6,10 @@ package kazarin.my_money.gui;
 import kazarin.my_money.db.OperationsDao;
 import kazarin.my_money.model.Operations;
 import kazarin.my_money.model.Environment;
- 
+
+import java.util.logging.*;
+
+import java.io.IOException;
 import javax.swing.JFrame;
 import javax.swing.JTabbedPane;
 
@@ -19,6 +22,8 @@ public class MainScreen extends JFrame{
      * An instance of MainScreen.
      */
     private static MainScreen instance;
+
+    private static Logger logger;
 	
 	private JTabbedPane tabbedPane;
 	private OperationListPanel operationListPanel;
@@ -28,7 +33,8 @@ public class MainScreen extends JFrame{
 	 * Constructs a MainScreen and displays it.
 	 */
 	private MainScreen(){	
-		super();
+		super();		
+
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);	
 		tabbedPane = new JTabbedPane();
 		operationListPanel = new OperationListPanel(this);
@@ -60,14 +66,34 @@ public class MainScreen extends JFrame{
      * The main method is where the main screen are created.
      */
 	public static void main(String[] args){
+		try {
+            logger = Logger.getLogger(MainScreen.class.getName());
+            FileHandler fh = new FileHandler("/tmp/MainScreen.log");  
+            logger.addHandler(fh);
+            SimpleFormatter formatter = new SimpleFormatter();  
+            fh.setFormatter(formatter); 
+            logger.setUseParentHandlers(false);
+        } catch (SecurityException e) {  
+            e.printStackTrace();  
+        } catch (IOException e) {  
+            e.printStackTrace();  
+        }
+
 		JFrame frame = new JFrame();
 		
 		Environment env = Environment.getInstance();
 		
-		if (!env.isReady()) {			
-			PrepareDialog pd = new PrepareDialog(frame);			
+		if (!env.isReady()) {
+			logger.info("env is not ready");
+			PrepareDialog pd = new PrepareDialog(frame);
 		}
 		OperationsDao opDao = new OperationsDao();
+		while (!opDao.isOk()) {
+			logger.info("opDao is not OK");
+			PrepareDialog pd = new PrepareDialog(frame);
+			opDao = new OperationsDao();
+		}
+		 
 		Operations ops = Operations.getInstance();
 		ops.setList(opDao.getAll());
 		MainScreen mainScreen = MainScreen.getInstance();
