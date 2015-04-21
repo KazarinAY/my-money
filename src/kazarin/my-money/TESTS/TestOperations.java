@@ -91,7 +91,7 @@ public class TestOperations {
 
 	@Test
 	public void testAdd15() throws WrongCommandException {
-		operations.add("add 135 : 13-04-2015 : test description # test tag1, testTag2");		
+		operations.add("add 999 : 13-04-2015 : test description #test tag1,testTag2");		
 	}
 
 	@Test

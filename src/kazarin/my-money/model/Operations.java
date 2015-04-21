@@ -150,9 +150,12 @@ public final class Operations {
 
             String argsLine = line.split("#")[1];
             tagsArr = argsLine.split(",");
-            for (String arg : tagsArr) {
-                arg = arg.trim();
+            
+            for (int i = 0; i < tagsArr.length; i++) {
+                tagsArr[i] = tagsArr[i].trim();
             }
+            MyLogger.log(Level.INFO, "ADD: tagsArr = " + tagsArr.length + " "
+                                                                    + Arrays.toString(tagsArr));
 
             line = line.split("#")[0];
         }

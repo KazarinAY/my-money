@@ -4,9 +4,9 @@
 package kazarin.my_money.db;
 
 import kazarin.my_money.model.Operation;
-import kazarin.my_money.MyLogger;
+import kazarin.my_money.model.Environment;
 
-import java.util.logging.Level;
+import java.util.logging.*;
 
 import java.sql.DriverManager;
 import java.sql.Connection;
@@ -20,19 +20,20 @@ import java.util.Date;
 import java.text.SimpleDateFormat;
 import java.util.Locale;
 import java.util.Properties;
+import java.io.IOException;
 
 /**
  * Provides access to the operations table in database.
  */
 public class OperationsDao implements Dao<Operation>{
 
-	
+	private Logger logger;
 
-	private String user = "guest";
-	private String password = "12345678";	
-	private String url = "jdbc:mysql://localhost/MYMONEY";
-	private String driver = "com.mysql.jdbc.Driver";
-	Properties properties=new Properties();
+	private Environment environment;
+
+	private String url;
+	
+	Properties propertiesDB = new Properties();
 	
 	private Connection connection;
  
@@ -40,28 +41,39 @@ public class OperationsDao implements Dao<Operation>{
 	 * Constracts the OperationsDao.
  	 */
 	public OperationsDao(){	
-		super();		
-
-		try{
-            Class.forName(driver);
-        }catch (ClassNotFoundException e){
-            System.err.println("ERROR: failed to find driver.");
-            e.printStackTrace();
+		super();
+		try {
+            logger = Logger.getLogger(OperationsDao.class.getName());
+            FileHandler fh = new FileHandler("/tmp/OperationsDao.log");  
+            logger.addHandler(fh);
+            SimpleFormatter formatter = new SimpleFormatter();  
+            fh.setFormatter(formatter); 
+            logger.setUseParentHandlers(false);
+        } catch (SecurityException e) {  
+            e.printStackTrace();  
+        } catch (IOException e) {  
+            e.printStackTrace();  
         }
-        properties.setProperty("user",user);
-        properties.setProperty("password",password);
-        properties.setProperty("useUnicode","true");
-        properties.setProperty("characterEncoding","UTF-8");
+
+		environment = Environment.getInstance();
+        propertiesDB = environment.getPropertiesDB();
+		url = propertiesDB.getProperty("url");
+		try{
+			logger.info("DRIVER: " + propertiesDB.getProperty("driver"));
+            Class.forName(propertiesDB.getProperty("driver"));
+        }catch (ClassNotFoundException e){
+            logger.log(Level.WARNING, "ERROR: failed to find driver.", e);            
+        }
 	}
  	
  	@Override
 	public List<Operation> getAll(){
 		String sql = "SELECT * FROM operations;";
-		MyLogger.log(Level.INFO, "SQL: " + sql);
+		logger.info("SQL: " + sql);
 		List<Operation> list = new ArrayList<Operation>();
 		ResultSet rs = null;
 		try{	
-			connection = DriverManager.getConnection(url, properties);
+			connection = DriverManager.getConnection(url, propertiesDB);
 			Statement stmt = connection.createStatement();			
 			rs = stmt.executeQuery(sql);
 			
@@ -76,15 +88,15 @@ public class OperationsDao implements Dao<Operation>{
 			}
 
 		} catch(SQLException e){
-			System.err.println("ERROR: failed to get all.");
-			System.err.println("ERROR: failed to get resultSet.");
+			logger.warning("ERROR: failed to get all.");
+			logger.log(Level.WARNING, "ERROR: failed to get resultSet.", e);
 			e.printStackTrace();
 		} finally {
 			if (connection != null) {
 				try {
 					connection.close();
 				} catch (SQLException e) {
-					System.err.println("ERROR: failed to close connection.");
+					logger.log(Level.WARNING, "ERROR: failed to close connection.", e);
 				}				
 			}
 		}
@@ -104,10 +116,10 @@ public class OperationsDao implements Dao<Operation>{
 									+ "(op_how_much, op_date, op_description, op_tags) "
 									+ "VALUES ('%s', '%s', \"%s\", \"%s\");",
 									howMuch, date, description, tags);
-		MyLogger.log(Level.INFO, "SQL: " + sql);
+		logger.info("SQL: " + sql);
 		
 		try{
-			connection = DriverManager.getConnection(url, properties);
+			connection = DriverManager.getConnection(url, propertiesDB);
 					
 			Statement stmt = connection.createStatement();			
 			stmt.executeUpdate(sql);			
@@ -145,10 +157,10 @@ public class OperationsDao implements Dao<Operation>{
 									description, tags,
 									idStr);
 		
-		MyLogger.log(Level.INFO, "SQL: " + sql);
+		logger.info("SQL: " + sql);
 		
 		try{
-			connection = DriverManager.getConnection(url, properties);
+			connection = DriverManager.getConnection(url, propertiesDB);
 					
 			Statement stmt = connection.createStatement();			
 			stmt.executeUpdate(sql);			
@@ -173,10 +185,10 @@ public class OperationsDao implements Dao<Operation>{
 		String id = String.valueOf(operation.getId());
 		
 		String sql = String.format("DELETE FROM operations WHERE op_id='%s';", id);
-		MyLogger.log(Level.INFO, "SQL: " + sql);
+		logger.info("SQL: " + sql);
 		
 		try{
-			connection = DriverManager.getConnection(url, properties);
+			connection = DriverManager.getConnection(url, propertiesDB);
 					
 			Statement stmt = connection.createStatement();			
 			stmt.executeUpdate(sql);			

@@ -1,5 +1,7 @@
 package kazarin.my_money.model;
 
+import java.util.logging.*;
+
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.Files;
@@ -16,6 +18,7 @@ import java.util.Properties;
  * Singletone.
  */
 public final class Environment {
+    private Logger logger;
     
     /**
      * Properties.
@@ -42,13 +45,26 @@ public final class Environment {
      * Creates .properties file and directories if they don't exist.
      */
     private Environment() {
-        
+        try {
+            logger = Logger.getLogger(Environment.class.getName());
+            FileHandler fh = new FileHandler("/tmp/Environment.log");  
+            logger.addHandler(fh);
+            SimpleFormatter formatter = new SimpleFormatter();  
+            fh.setFormatter(formatter); 
+            logger.setUseParentHandlers(false);
+        } catch (SecurityException e) {  
+            e.printStackTrace();  
+        } catch (IOException e) {  
+            e.printStackTrace();  
+        }
+
         String directory = System.getProperty("user.home") + "/mymoney";
-        propertyDir = Paths.get(directory);
-        propertyFile = Paths.get(directory + "/mymoney.properties");
+        this.propertyDir = Paths.get(directory);
+        this.propertyFile = Paths.get(directory + "/mymoney.properties");
+        logger.info("directory = " + directory + "\n\t" + "propertyFile = " + this.propertyFile);
 
         if (!Files.exists(propertyFile)) {
-            if (!Files.exists(propertyDir)) {
+            if (!Files.exists(this.propertyDir)) {
                 createDirectories();
             }            
             createProperiesFile();
@@ -58,14 +74,14 @@ public final class Environment {
                 properties.store(new FileWriter(propertyFile.toString()),
                                                                     "comment");
             } catch (IOException e) {
-                System.err.println("ERROR: failed to store properties file.");
+                logger.warning("ERROR: failed to store properties file.");
             }
         }
         try {
             properties = new Properties();
             properties.load(new FileReader(propertyFile.toString()));
         } catch (IOException e) {
-                System.err.println("ERROR: failed to load properties file.");
+                logger.warning("ERROR: failed to load properties file.");
         }
     }
 
@@ -102,17 +118,17 @@ public final class Environment {
                     bw.write(op.toCommandString());
                     bw.newLine();
                 }
-                System.out.println("Saved");
+                logger.info("Saved");
 
             } catch (IOException e) {
-                System.err.println("ERROR: failed to save data to file "
+                logger.warning("ERROR: failed to save data to file "
                                                                     + fileName);
             }
         } else {
             try {
                 Files.createFile(file);
             } catch (IOException e) {
-                System.err.println("ERROR: failed to create "
+                logger.warning("ERROR: failed to create "
                                                         + fileName + " file!");
             }
             saveToTxt(fileName);             // recursive calling
@@ -127,7 +143,7 @@ public final class Environment {
     public void loadFromTxt(String fileName) {
         Path file = Paths.get(fileName);
         if (!Files.exists(file)) {
-            System.out.println(fileName + " file not found.");
+            logger.warning("LOAD" + fileName + " file not found.");
             return;
         }
         
@@ -142,11 +158,11 @@ public final class Environment {
             }            
 
         } catch (WrongCommandException wce) {
-            System.err.println("ERROR: failed to load data from"
+            logger.warning("ERROR: failed to load data from"
                                                         + fileName + " file!");
-            System.err.println("");
+            logger.warning("");
         } catch (IOException e) {
-                System.err.println("ERROR: failed to load data from"
+                logger.warning("ERROR: failed to load data from"
                                                         + fileName + " file!");
             }
     }
@@ -158,7 +174,7 @@ public final class Environment {
         try {
             Files.createFile(propertyFile);
         } catch (IOException e) {
-            System.err.println("ERROR: failed to create data file!");
+            logger.warning("ERROR: failed to create data file!");
         }
     }
     
@@ -168,8 +184,42 @@ public final class Environment {
     private void createDirectories() {
         try {
             Files.createDirectories(propertyDir);
+            logger.info(propertyDir + "created");
         } catch (IOException e) {
-            System.err.println("ERROR: failed to create property directories!");
+            logger.warning("ERROR: failed to create property directories!");
+        }
+    }
+
+    public Properties getPropertiesDB() {        
+        return properties;
+    }
+
+    public boolean isReady() {
+        if (       properties.getProperty("user") == null
+                || properties.getProperty("password") == null
+                || properties.getProperty("url") == null
+                || properties.getProperty("driver") == null) {
+            logger.info("ISREADY: environment isn't ready");
+            return false;
+        }
+        logger.info("ISREADY: environment is ready");
+        return true;
+    }
+
+    public void prepare(String user, String password, String url, String driver) {
+        //user = "guest";
+        //password = "12345678";   
+        //url = "jdbc:mysql://localhost/MYMONEY";
+        //driver = "com.mysql.jdbc.Driver";
+        properties.setProperty("user", user);
+        properties.setProperty("password", password);
+        properties.setProperty("url", url);
+        properties.setProperty("driver", driver);
+         try {
+                properties.store(new FileWriter(propertyFile.toString()),
+                                                                    "comment");
+        } catch (IOException e) {
+           logger.warning("ERROR: failed to store properties file.");
         }
     }
     

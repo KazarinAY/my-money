@@ -2,6 +2,7 @@
  * MainScreen
  */
 package kazarin.my_money.gui;
+
 import kazarin.my_money.db.OperationsDao;
 import kazarin.my_money.model.Operations;
 import kazarin.my_money.model.Environment;
@@ -27,9 +28,8 @@ public class MainScreen extends JFrame{
 	 * Constructs a MainScreen and displays it.
 	 */
 	private MainScreen(){	
-		
-		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);		
-		
+		super();
+		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);	
 		tabbedPane = new JTabbedPane();
 		operationListPanel = new OperationListPanel(this);
 		//studentListPanel = new StudentListPanel(this);
@@ -40,8 +40,10 @@ public class MainScreen extends JFrame{
 		
 		setLocation(200, 200);
 		pack();
-		setVisible(true);
+		setVisible(true);		
 	}
+
+
 
 	/**
      * Gets instance of MainScreen.
@@ -58,10 +60,16 @@ public class MainScreen extends JFrame{
      * The main method is where the main screen are created.
      */
 	public static void main(String[] args){
-		OperationsDao opDao = new OperationsDao();
+		JFrame frame = new JFrame();
+		
 		Environment env = Environment.getInstance();
+		
+		if (!env.isReady()) {			
+			PrepareDialog pd = new PrepareDialog(frame);			
+		}
+		OperationsDao opDao = new OperationsDao();
 		Operations ops = Operations.getInstance();
 		ops.setList(opDao.getAll());
-		MainScreen mainScreen = MainScreen.getInstance();		
+		MainScreen mainScreen = MainScreen.getInstance();
 	}
 }

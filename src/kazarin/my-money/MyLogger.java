@@ -10,8 +10,7 @@ public class MyLogger {
     private FileHandler fh;
 
     private MyLogger() {
-    	try {  
-
+    	try {
     		logger = Logger.getLogger(MyLogger.class.getName());
 	        // This block configure the logger with handler and formatter  
 	        fh = new FileHandler("/tmp/mymoney.log");  
@@ -23,10 +22,10 @@ public class MyLogger {
 	        // the following statement is used to log any messages  
 	        logger.info("Start logging...");  
 
-	    } catch (SecurityException e) {  
-	        e.printStackTrace();  
-	    } catch (IOException e) {  
-	        e.printStackTrace();  
+	    } catch (SecurityException e) {
+	        e.printStackTrace();
+	    } catch (IOException e) {
+	        e.printStackTrace();
 	    }  
     }
 

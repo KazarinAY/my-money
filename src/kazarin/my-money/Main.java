@@ -1,5 +1,6 @@
 package kazarin.my_money;
 
+import java.util.logging.*;
 import kazarin.my_money.db.OperationsDao;
 import kazarin.my_money.model.Operations;
 import kazarin.my_money.model.Operation;
@@ -14,6 +15,8 @@ import java.util.List;
  * Main class.
  */
 public final class Main {
+	private static Logger logger;
+
 	/**
 	 * main method.
 	 * @param args	arguments
@@ -22,11 +25,27 @@ public final class Main {
 	 */
 	public static void main(final String[] args)
 			throws IOException, ClassNotFoundException {
-
-		OperationsDao opDao = new OperationsDao();
-		System.out.println("My Money:");
 		
-		Environment env = Environment.getInstance();		
+		logger = Logger.getLogger(Main.class.getName());
+        FileHandler fh = new FileHandler("/tmp/Main.log");  
+        logger.addHandler(fh);
+        SimpleFormatter formatter = new SimpleFormatter();  
+        fh.setFormatter(formatter); 
+        logger.setUseParentHandlers(false);
+		
+		System.out.println("My Money!!!");
+		
+		Environment env = Environment.getInstance();
+		if (!env.isReady()) {
+			logger.info("env isn't ready...");
+			String user = "guest";
+	        String password = "12345678";   
+	        String url = "jdbc:mysql://localhost/MYMONEY";
+	        String driver = "com.mysql.jdbc.Driver";
+			env.prepare(user, password, url, driver);
+		}
+		OperationsDao opDao = new OperationsDao();
+
 		Operations ops = Operations.getInstance();
 		ops.setList(opDao.getAll());
 		ops.printStatistic();
@@ -93,7 +112,7 @@ public final class Main {
 										printEnterCommand();
 										break;
 
-					case "exit":		env.saveToTxt(env.getTxtDataFile());
+					case "exit":		//env.saveToTxt(env.getTxtDataFile());
 										return;
 
 					default: 			printWrongCommand();
