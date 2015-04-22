@@ -42,7 +42,7 @@ public class PrepareDialog extends JDialog {
 		textFieldUrl = new JTextField(20);
 		add(textFieldUrl);
 		
-		JLabel labelDriver = new JLabel("Driver:");
+		JLabel labelDriver = new JLabel("DB (MySQL or HSQL):");
 		add(labelDriver);
 		
 		textFieldDriver = new JTextField(20);

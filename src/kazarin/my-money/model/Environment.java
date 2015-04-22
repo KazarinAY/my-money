@@ -206,16 +206,24 @@ public final class Environment {
         return true;
     }
 
-    public void prepare(String user, String password, String url, String driver) {
+    public void prepare(String user, String password, String url, String db) {
         //user = "guest";
         //password = "12345678";   
         //url = "jdbc:mysql://localhost/MYMONEY";
         //driver = "com.mysql.jdbc.Driver";
         properties.setProperty("user", user);
         properties.setProperty("password", password);
-        properties.setProperty("url", url);
-        properties.setProperty("driver", driver);
-         try {
+        if (db.equals("MySQL")){
+             properties.setProperty("driver", "com.mysql.jdbc.Driver");
+             properties.setProperty("url", "jdbc:mysql:" + url);
+        } else if (db.equals("HSQL")) {
+            properties.setProperty("driver", "org.hsqldb.jdbc.JDBCDriver");
+            properties.setProperty("url", "jdbc:hsqldb:file:" + url);            
+        } else {
+            logger.info("PREPARE: unknown DB");
+        }
+       
+        try {
                 properties.store(new FileWriter(propertyFile.toString()),
                                                                     "comment");
         } catch (IOException e) {

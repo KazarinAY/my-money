@@ -33,97 +33,18 @@ public final class Main {
         fh.setFormatter(formatter); 
         logger.setUseParentHandlers(false);
 		
-		System.out.println("My Money!!!");
-		
-		Environment env = Environment.getInstance();
-		if (!env.isReady()) {
-			logger.info("env isn't ready...");
-			String user = "guest";
-	        String password = "12345678";   
-	        String url = "jdbc:mysql://localhost/MYMONEY";
-	        String driver = "com.mysql.jdbc.Driver";
-			env.prepare(user, password, url, driver);
-		}
-		OperationsDao opDao = new OperationsDao();
-
-		Operations ops = Operations.getInstance();
-		ops.setList(opDao.getAll());
-		ops.printStatistic();
-
-		System.out.print("My Money, enter command:");
 		try (BufferedReader reader =
 					new BufferedReader(new InputStreamReader(System.in))) {
-			while (true) {
-				String line = reader.readLine();
+		Environment env = Environment.getInstance();		
+			while (!env.isReady()) {
+				logger.info("env isn't ready...");			
+				prepareDialog(reader);
+			}		
 
-				switch (line.split(" ")[0]) {
-					case "show": 		ops.showAllList();
-										printEnterCommand();
-										break;
-
-					case "add":			try {
-											ops.add(line);
-											ops.printStatistic();
-										} catch (WrongCommandException e) {
-											printWrongCommand();
-										}
-										printEnterCommand();
-										break;
-
-					case "delete":		try {
-											ops.delete(line);
-											ops.printStatistic();
-										} catch (WrongCommandException e) {
-											printWrongCommand();
-										}
-										printEnterCommand();
-										break;
-
-					case "change": 		try {
-											ops.change(line);
-											ops.printStatistic();
-										} catch (WrongCommandException e) {
-											printWrongCommand();
-										}
-										printEnterCommand();
-										break;
-
-					case "stat": 		//try {
-										ops.printStatistic();
-										//} catch (WrongCommandException e){
-										//	System.out.println("Wrong command!");
-										//}
-										printEnterCommand();
-										break;
-
-					case "saveto":  	try {
-											env.saveToTxt(getFileName(line));
-										} catch (WrongCommandException e) {
-											printWrongCommand();
-										}
-										printEnterCommand();
-										break;
-
-					case "loadfrom": 	try {
-											env.loadFromTxt(getFileName(line));
-										} catch (WrongCommandException e) {
-											printWrongCommand();
-										}
-										printEnterCommand();
-										break;
-
-					case "exit":		//env.saveToTxt(env.getTxtDataFile());
-										return;
-
-					default: 			printWrongCommand();
-										printEnterCommand();
-										break;
-				}
-			}
+			runCommandLine(reader);		
 		} catch (IOException e) {
-			System.err.println(e.getMessage());
+			logger.log(Level.WARNING, "BufferedReader", e);
 		}
-		
 	} // main()	
 
 	/**
@@ -162,5 +83,104 @@ public final class Main {
 		
 		System.out.println(fileName);
 		return fileName;
+	}
+
+	private static void runCommandLine(BufferedReader reader) throws IOException {
+		Environment env = Environment.getInstance();
+		OperationsDao opDao = new OperationsDao();
+
+		Operations ops = Operations.getInstance();
+		ops.setList(opDao.getAll());
+		ops.printStatistic();
+
+		printEnterCommand();
+		
+		while (true) {
+			String line = reader.readLine();
+
+			switch (line.split(" ")[0]) {
+				case "show": 		ops.showAllList();
+									printEnterCommand();
+									break;
+
+				case "add":			try {
+										ops.add(line);
+										ops.printStatistic();
+									} catch (WrongCommandException e) {
+										printWrongCommand();
+									}
+									printEnterCommand();
+									break;
+
+				case "delete":		try {
+										ops.delete(line);
+										ops.printStatistic();
+									} catch (WrongCommandException e) {
+										printWrongCommand();
+									}
+									printEnterCommand();
+									break;
+
+				case "change": 		try {
+										ops.change(line);
+										ops.printStatistic();
+									} catch (WrongCommandException e) {
+										printWrongCommand();
+									}
+									printEnterCommand();
+									break;
+
+				case "stat": 		//try {
+									ops.printStatistic();
+									//} catch (WrongCommandException e){
+									//	System.out.println("Wrong command!");
+									//}
+									printEnterCommand();
+									break;
+
+				case "saveto":  	try {
+										env.saveToTxt(getFileName(line));
+									} catch (WrongCommandException e) {
+										printWrongCommand();
+									}
+									printEnterCommand();
+									break;
+
+				case "loadfrom": 	try {
+										env.loadFromTxt(getFileName(line));
+									} catch (WrongCommandException e) {
+										printWrongCommand();
+									}
+									printEnterCommand();
+									break;
+
+				case "exit":		//env.saveToTxt(env.getTxtDataFile());
+									return;
+
+				default: 			printWrongCommand();
+									printEnterCommand();
+									break;
+			}
+		}
+		
+	}
+
+	private static void prepareDialog(BufferedReader reader) throws IOException {
+		
+		System.out.print("user: ");
+		String user = reader.readLine();
+		
+		System.out.print("password: ");
+		String password = reader.readLine();
+		
+		System.out.print("url: ");
+		String url = reader.readLine();
+		
+		System.out.print("DB (MySQL or HSQL): ");
+		String db = reader.readLine();
+		
+		Environment env = Environment.getInstance();
+		env.prepare(user, password, url, db);			
+		
 	}
 }

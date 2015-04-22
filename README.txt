@@ -6,7 +6,7 @@ Instructions
 ---------------------------------------------------------
 
 First, create database.
-Then, ctreate operations table - see create_table.sql
+Then, create operations table - see create_table.sql
 
 ---------------------------------------------------------
 
@@ -53,8 +53,8 @@ loadfrom - loads operations list from the file.
 
 Example of "Enter information":
 	user = "guest";
-    password = "12345678";   
-    url = "jdbc:mysql://localhost/MYMONEY";
-    driver = "com.mysql.jdbc.Driver";
+	password = "12345678";   
+	url = "jdbc:mysql://localhost/MYMONEY";
+	driver = "com.mysql.jdbc.Driver";
 
 ---------------------------------------------------------
