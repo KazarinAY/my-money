@@ -1,5 +1,7 @@
 package kazarin.my_money.model;
 
+import java.util.logging.*;
+
 import java.util.Date;
 import java.text.SimpleDateFormat;
 import java.util.Locale;
@@ -8,6 +10,7 @@ import java.util.HashSet;
 import java.math.BigDecimal;
 import java.lang.IllegalArgumentException;
 import java.text.ParseException;
+import java.io.IOException;
 
 /**
  * An operation.
@@ -16,6 +19,23 @@ public class Operation {
 
     private SimpleDateFormat dateFormat;
     
+    private static Logger logger;
+
+    static {
+        try {
+            logger = Logger.getLogger(Operation.class.getName());
+            FileHandler fh = new FileHandler("/tmp/Operation.log");  
+            logger.addHandler(fh);
+            SimpleFormatter formatter = new SimpleFormatter();  
+            fh.setFormatter(formatter); 
+            logger.setUseParentHandlers(false);
+        } catch (SecurityException e) {  
+            e.printStackTrace();  
+        } catch (IOException e) {  
+            e.printStackTrace();  
+        }
+    }
+
     /**
      * The operation id.
      */
@@ -24,7 +44,7 @@ public class Operation {
     /**
      * The amount of money.
      */
-    private BigDecimal howMuch;
+    private BigDecimal sum;
 
     /**
      * When was the operation.
@@ -43,19 +63,18 @@ public class Operation {
 
     /**
      * Constructor.
-     * @param howMuch       how much money spent or received
+     * @param sum       how much money spent or received
      * @param date          when was the operation
      * @param description   description of operation
      * @param tags          tags
      */
-    public Operation(final int id, final BigDecimal howMuch, final Date date,
-                     final String description, final String... tags) {
-        if (howMuch == null || date == null) throw new IllegalArgumentException(
-                                                    "howMuch or date == null");
+    public Operation(final int id, final BigDecimal sum, final Date date,
+                     final String description, final String... tags) {        
         
+
         dateFormat = new SimpleDateFormat("dd-MM-yyyy", Locale.ENGLISH);
         this.id = id;
-        this.howMuch = howMuch;
+        this.sum = sum;
         this.date = date;
         if (description == null) this.description = "";
         else this.description = description;
@@ -65,28 +84,29 @@ public class Operation {
                 this.tags.add(tag);
             }
         }
+
+        logger.info("new Operation Constructed");
+        logger.info(toString());
     }
 
     /**
      * Constructor.
      * Same as public Operation(BigDecimal, Date, String, String... ),
      * except the date. Sets current date.
-     * @param howMuch       how much money spent or received
+     * @param sum       how much money spent or received
      * @param description   description of operation
      * @param tags          tags
      */
-    public Operation(final int id, final BigDecimal howMuch,
+    public Operation(final int id, final BigDecimal sum,
                      final String description, final String... tags) {
-        this(id, howMuch, new Date(), description, tags);
+        this(id, sum, new Date(), description, tags);
     }
 
     /**
      * Constructor for adding and changing.
      */
     public Operation() { 
-        dateFormat = new SimpleDateFormat("dd-MM-yyyy", Locale.ENGLISH);
-        this.id = -1;        
-        this.howMuch = null;
+        this.sum = null;
         this.date = null;
         this.description = null;
         this.tags = null;
@@ -100,10 +120,10 @@ public class Operation {
     }
 
     /**
-     * @return howMuch
+     * @return sum
      */
-    public final BigDecimal getHowMuch() {
-        return howMuch;
+    public final BigDecimal getSum() {
+        return sum;
     }
 
     /**
@@ -156,13 +176,13 @@ public class Operation {
     }
 
     /**
-     * @param howMuch   sets howMuch
+     * @param sum   sets sum
      */
-    public final void setHowMuch(final BigDecimal howMuch) {
-        if (howMuch == null)
-                        throw new IllegalArgumentException("howMuch == null");
+    public final void setSum(final BigDecimal sum) {
+        if (sum == null)
+                        throw new IllegalArgumentException("sum == null");
 
-        this.howMuch = howMuch;
+        this.sum = sum;
     }
 
     /**
@@ -225,30 +245,38 @@ public class Operation {
             descriptionStr = description;
         }
         
-        return "add " + howMuch.toString() + ":" 
+        return "add " + sum.toString() + ":" 
                          + dateFormat.format(date) + ":"
                          + descriptionStr + "#" + tagsStr;
     }
     
     @Override
     public final String toString() {        
+        String sumStr = "null";
+        if (sum != null) sumStr = sum.toString();
 
-        String tagsStr = getTagsStr();        
-              
+        String dateStr = "null";
+        if (date != null) dateStr = dateFormat.format(date);
+        
         String descriptionStr = "";
         if (description != null) {
             descriptionStr = description;
         }
+
+        String tagsStr = "";
+        if (tags != null) tagsStr = getTagsStr();
+              
         
-        return id + ": " + howMuch.toString() + " руб " 
-                         + dateFormat.format(date) + " "
+        
+        return id + ": " + sumStr + " руб "
+                         + dateStr + " "
                          + descriptionStr + " #: " + tagsStr;
     }
 
     @Override
     public final int hashCode() {
         int code = id;
-        code = 31 * code + (howMuch != null ? howMuch.hashCode() : 0);
+        code = 31 * code + (sum != null ? sum.hashCode() : 0);
         code = 31 * code + (date != null ? date.hashCode() : 0);
         return code;
     }
@@ -263,8 +291,8 @@ public class Operation {
 
         if (id != op.getId()) return false;        
 
-        if (howMuch != null ? !howMuch.equals(op.getHowMuch())
-                            : op.getHowMuch() != null) return false;
+        if (sum != null ? !sum.equals(op.getSum())
+                            : op.getSum() != null) return false;
        
         if (date != null ? !date.equals(op.getDate())
                          : op.getDate() != null) return false;

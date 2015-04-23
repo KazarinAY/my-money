@@ -15,7 +15,7 @@ public class TestOperation {
 
 	@Test(expected=IllegalArgumentException.class)
 	public void testSetHowMuchNull(){		
-		testOperation.setHowMuch(null);		
+		testOperation.setSum(null);		
 	}
 
 	@Test(expected=IllegalArgumentException.class)
