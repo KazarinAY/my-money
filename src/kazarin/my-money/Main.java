@@ -181,7 +181,7 @@ public final class Main {
 		String db = reader.readLine();
 		
 		Environment env = Environment.getInstance();
-		env.prepare(user, password, host, dbName, db);			
+		env.prepare(user, password, host, dbName, db);
 		
 	}
 }

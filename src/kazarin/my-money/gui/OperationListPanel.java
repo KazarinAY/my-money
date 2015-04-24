@@ -5,6 +5,7 @@ package kazarin.my_money.gui;
 
 import kazarin.my_money.model.Operations;
 import kazarin.my_money.model.Operation;
+import kazarin.my_money.model.Environment;
 
 import javax.swing.JPanel;
 import java.awt.event.ActionListener; 
@@ -42,8 +43,9 @@ public class OperationListPanel extends JPanel implements ActionListener{
 		super();
 
 		this.frame = frame;
-
-		this.dataList = Operations.getInstance().getList();
+		Environment env = Environment.getInstance();
+		Operations operations = Operations.getInstance(env.getDBType());
+		this.dataList = operations.getList();
 		
 		setLayout(new BorderLayout());
 		
@@ -80,7 +82,7 @@ public class OperationListPanel extends JPanel implements ActionListener{
 			public Object getValueAt(int row, int col) {
 				Operation operation = dataList.get(row);
 				switch(col){
-					case 0: return operation.getHowMuch();
+					case 0: return operation.getSum();
 					case 1: return operation.getDate();
 					case 2: return operation.getDescription();
 					case 3: return operation.getTagsStr();
@@ -99,12 +101,12 @@ public class OperationListPanel extends JPanel implements ActionListener{
 			public void setValueAt(Object aValue, int row, int col) {
 				if(dataList.size() < row) { 								//add new row
 					Operation operation = new Operation();
-					operation.setHowMuch((BigDecimal)aValue);
+					operation.setSum((BigDecimal)aValue);
 					dataList.add(operation);			
 				} else {													//change row
 					Operation operation = dataList.get(row);
 					switch(col){
-						case 0: operation.setHowMuch((BigDecimal)aValue);
+						case 0: operation.setSum((BigDecimal)aValue);
 								break;
 						case 1: operation.setDate((Date)aValue);
 								break;
@@ -178,19 +180,21 @@ public class OperationListPanel extends JPanel implements ActionListener{
 	@Override
 	public void actionPerformed(ActionEvent e) {
 		int selectedRow;
-		
+		Environment env = Environment.getInstance();
+		Operations operations = Operations.getInstance(env.getDBType());
 		switch(e.getActionCommand()) {
+			
 			case "Add": 
 				AddOperationDialog addOperationDialog = new AddOperationDialog(frame, tableModel);
-				addOperationDialog.show();
-				dataList = Operations.getInstance().getList();
-				table.repaint();				
+				addOperationDialog.show();				
+				dataList = operations.getList();
+				table.repaint();
 				break;
 			case "Change": 
 				selectedRow = table.getSelectedRow();
 				if(selectedRow == -1){break;}	//Do nothing if don't selected any row
 				Operation operationToChange = new Operation();
-				operationToChange.setHowMuch((BigDecimal)table.getValueAt(selectedRow, 0));
+				operationToChange.setSum((BigDecimal)table.getValueAt(selectedRow, 0));
 				operationToChange.setDate((Date)table.getValueAt(selectedRow, 1));
 				operationToChange.setDescription((String)table.getValueAt(selectedRow, 2));
 				operationToChange.setTags(((String )table.getValueAt(selectedRow, 3)).split(","));
@@ -198,14 +202,14 @@ public class OperationListPanel extends JPanel implements ActionListener{
 				ChangeOperationDialog changeOperationDialog	= new ChangeOperationDialog(
 												frame, tableModel, selectedRow, operationToChange);
 				changeOperationDialog.show();
-				dataList = Operations.getInstance().getList();
+				dataList = operations.getList();
 				table.repaint();
 				break;
 			case "Delete": 				
 				selectedRow = table.getSelectedRow();
 				if(selectedRow == -1){break;}	//Do nothing if don't selected any row				
 				Operation operationToDelete = new Operation();
-				operationToDelete.setHowMuch((BigDecimal)table.getValueAt(selectedRow, 0));
+				operationToDelete.setSum((BigDecimal)table.getValueAt(selectedRow, 0));
 				operationToDelete.setDate((Date)table.getValueAt(selectedRow, 1));
 				operationToDelete.setDescription((String)table.getValueAt(selectedRow, 2));
 				operationToDelete.setTags(((String )table.getValueAt(selectedRow, 3)).split(","));
@@ -213,7 +217,7 @@ public class OperationListPanel extends JPanel implements ActionListener{
 				DeleteOperationDialog deleteOperationDialog = new DeleteOperationDialog(
 												frame, tableModel, selectedRow, operationToDelete);
 				deleteOperationDialog.show();
-				dataList = Operations.getInstance().getList();
+				dataList = operations.getList();
 				table.repaint();
 				break;	
 			default:

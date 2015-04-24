@@ -5,6 +5,7 @@ package kazarin.my_money.gui;
 
 import kazarin.my_money.model.Operations;
 import kazarin.my_money.model.Operation;
+import kazarin.my_money.model.Environment;
 import kazarin.my_money.model.WrongCommandException;
 
 import javax.swing.JFrame;
@@ -48,8 +49,8 @@ public class DeleteOperationDialog {
 		dialog.setLayout(new GridLayout(5, 2));
 		dialog.setLocation(300, 350);
 		
-		JLabel labelHowMuch = new JLabel("How much: " + operation.getHowMuch());
-		dialog.add(labelHowMuch);
+		JLabel labelSum = new JLabel("Sum: " + operation.getSum());
+		dialog.add(labelSum);
 		
 		JLabel labelBlank = new JLabel("");
 		dialog.add(labelBlank);
@@ -81,7 +82,8 @@ public class DeleteOperationDialog {
 
 //LOG						System.out.println("Command: " + command);
 						
-						Operations operations = Operations.getInstance();
+						Environment env = Environment.getInstance();
+						Operations operations = Operations.getInstance(env.getDBType());
 						try {
 							operations.delete(command);
 						} catch (WrongCommandException wce) {

@@ -169,18 +169,19 @@ public final class Operations {
         String description = null;
         String[] tagsArr = null;
 
-        if (bars == 1) {            
-            if (line.indexOf('#') < line.lastIndexOf(':')) throw new WrongCommandException();
+        if (bars == 1 ) {            
+            if (line.indexOf('#') != line.length() - 1){
+                if (line.indexOf('#') < line.lastIndexOf(':')) throw new WrongCommandException();
 
-            String argsLine = line.split("#")[1];
-            tagsArr = argsLine.split(",");
-            
-            for (int i = 0; i < tagsArr.length; i++) {
-                tagsArr[i] = tagsArr[i].trim();
-            }
-            logger.log(Level.INFO, "ADD: tagsArr = " + tagsArr.length + " "
+                String argsLine = line.split("#")[1];
+                tagsArr = argsLine.split(",");
+                
+                for (int i = 0; i < tagsArr.length; i++) {
+                    tagsArr[i] = tagsArr[i].trim();
+                }
+                logger.log(Level.INFO, "ADD: tagsArr = " + tagsArr.length + " "
                                                                     + Arrays.toString(tagsArr));
-
+            }
             line = line.split("#")[0];
         }
 

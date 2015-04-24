@@ -1,6 +1,7 @@
 package kazarin.my_money.gui;
 
 import kazarin.my_money.model.Operations;
+import kazarin.my_money.model.Environment;
 import kazarin.my_money.model.WrongCommandException;
 
 import javax.swing.JFrame;
@@ -47,7 +48,7 @@ public class AddOperationDialog {
 		dialog.setLayout(new GridLayout(5, 2));
 		dialog.setLocation(300, 350);
 		
-		JLabel labelHowMuch = new JLabel("How much:");
+		JLabel labelHowMuch = new JLabel("Sum:");
 		dialog.add(labelHowMuch);
 		
 		textFieldHowMuch = new JTextField(20);
@@ -65,7 +66,7 @@ public class AddOperationDialog {
 		textFieldDescription = new JTextField(20);
 		dialog.add(textFieldDescription);
 		
-		JLabel labelTags = new JLabel("Date:");
+		JLabel labelTags = new JLabel("Tags:");
 		dialog.add(labelTags);
 		
 		textFieldTags = new JTextField(20);
@@ -95,8 +96,8 @@ public class AddOperationDialog {
 						
 						String command = String.format("add %s:%s:%s#%s",
 														howMuch, date, description,tags);
-						
-						Operations operations = Operations.getInstance();
+						Environment env = Environment.getInstance();
+						Operations operations = Operations.getInstance(env.getDBType());
 						try {
 							operations.add(command);
 						} catch (WrongCommandException wce) {

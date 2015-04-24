@@ -3,7 +3,6 @@
  */
 package kazarin.my_money.gui;
 
-import kazarin.my_money.db.OperationsDao;
 import kazarin.my_money.model.Operations;
 import kazarin.my_money.model.Environment;
 
@@ -90,15 +89,9 @@ public class MainScreen extends JFrame{
 			logger.info("env is not ready");
 			PrepareDialog pd = new PrepareDialog(frame);
 		}
-		OperationsDao opDao = new OperationsDao();
-		while (!opDao.isOk()) {
-			logger.info("opDao is not OK");
-			PrepareDialog pd = new PrepareDialog(frame);
-			opDao = new OperationsDao();
-		}
-		 
-		Operations ops = Operations.getInstance();
-		ops.setList(opDao.getAll());
+
+		Operations ops = Operations.getInstance(env.getDBType());
+		
 		MainScreen mainScreen = MainScreen.getInstance();
 	}
 }

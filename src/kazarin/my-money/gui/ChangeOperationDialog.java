@@ -5,6 +5,7 @@ package kazarin.my_money.gui;
 
 import kazarin.my_money.model.Operations;
 import kazarin.my_money.model.Operation;
+import kazarin.my_money.model.Environment;
 import kazarin.my_money.model.WrongCommandException;
 
 import kazarin.my_money.MyLogger;
@@ -29,7 +30,7 @@ import java.util.Date;
 public class ChangeOperationDialog {
 	private JFrame frame;
 	private JDialog dialog;
-	private JTextField textFieldHowMuch;
+	private JTextField textFieldSum;
 	private JTextField textFieldDate;
 	private JTextField textFieldDescription;
 	private JTextField textFieldTags;
@@ -61,12 +62,12 @@ public class ChangeOperationDialog {
 		dialog.setLayout(new GridLayout(5, 2));
 		dialog.setLocation(300, 350);
 		
-		JLabel labelHowMuch = new JLabel("How much:");
-		dialog.add(labelHowMuch);
+		JLabel labelSum = new JLabel("Sum:");
+		dialog.add(labelSum);
 		
-		textFieldHowMuch = new JTextField(20);
-		textFieldHowMuch.setText(String.valueOf(oldOperation.getHowMuch()));		
-		dialog.add(textFieldHowMuch);
+		textFieldSum = new JTextField(20);
+		textFieldSum.setText(String.valueOf(oldOperation.getSum()));		
+		dialog.add(textFieldSum);
 		
 		JLabel labelDate = new JLabel("Date:");
 		dialog.add(labelDate);
@@ -94,9 +95,9 @@ public class ChangeOperationDialog {
 			public void actionPerformed(ActionEvent e) {
 				switch(e.getActionCommand()){
 					case "OK": 
-						String howMuch = textFieldHowMuch.getText();
+						String howMuch = textFieldSum.getText();
 						if (!howMuch.trim().matches("[+-]?(?:\\d+(?:\\.\\d+)?|\\.\\d+)")) {
-							textFieldHowMuch.setText("Wrong number!");
+							textFieldSum.setText("Wrong number!");
 							break;
 						}
 						String date = textFieldDate.getText();
@@ -105,7 +106,7 @@ public class ChangeOperationDialog {
 							break;
 						}
 						if (!date.trim().matches("\\d{2}-\\d{2}-\\d{4}")) {
-							textFieldHowMuch.setText("Wrong date!");
+							textFieldSum.setText("Wrong date!");
 							break;
 						}
 						String description = textFieldDescription.getText();
@@ -116,11 +117,12 @@ public class ChangeOperationDialog {
 						
 						MyLogger.log(Level.INFO, "Command: " + command);
 						
-						Operations operations = Operations.getInstance();
+						Environment env = Environment.getInstance();
+						Operations operations = Operations.getInstance(env.getDBType());
 						try {
 							operations.change(command);
 						} catch (WrongCommandException wce) {
-							textFieldHowMuch.setText("Wrong command!");
+							textFieldSum.setText("Wrong command!");
 							break;
 						}
 										

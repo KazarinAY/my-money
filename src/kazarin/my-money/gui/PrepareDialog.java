@@ -17,11 +17,12 @@ import java.awt.GridLayout;
 public class PrepareDialog extends JDialog {
 		private JTextField textFieldUser;
 		private JTextField textFieldPassword;
-		private JTextField textFieldUrl;
-		private JTextField textFieldDriver;
+		private JTextField textFieldHost;
+		private JTextField textFieldDBName;
+		private JTextField textFieldDB;
 	public PrepareDialog(JFrame frame) {
 		super(frame, "Enter information:", true);
-		setLayout(new GridLayout(5, 2));
+		setLayout(new GridLayout(6, 2));
 		setLocation(300, 350);
 		
 		JLabel labelUser = new JLabel("User:");
@@ -36,17 +37,25 @@ public class PrepareDialog extends JDialog {
 		textFieldPassword = new JTextField(20);
 		add(textFieldPassword);
 
-		JLabel labelUrl = new JLabel("Url:");
-		add(labelUrl);
+		JLabel labelHost = new JLabel("Host:");
+		add(labelHost);
 		
-		textFieldUrl = new JTextField(20);
-		add(textFieldUrl);
+		textFieldHost = new JTextField(20);
+		textFieldHost.setText("localhost");
+		add(textFieldHost);
+
+		JLabel labelDBName = new JLabel("DB name:");
+		add(labelDBName);
 		
-		JLabel labelDriver = new JLabel("DB (MySQL or HSQL):");
-		add(labelDriver);
+		textFieldDBName = new JTextField(20);
+		add(textFieldDBName);
 		
-		textFieldDriver = new JTextField(20);
-		add(textFieldDriver);
+		JLabel labelDB = new JLabel("DB (MySQL or HSQL):");
+		add(labelDB);
+		
+		textFieldDB = new JTextField(20);
+		textFieldDB.setText("MySQL");
+		add(textFieldDB);
 		ActionListener actionListener = new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
@@ -56,12 +65,14 @@ public class PrepareDialog extends JDialog {
 						
 						String password = textFieldPassword.getText();
 						
-						String url = textFieldUrl.getText();
+						String host = textFieldHost.getText();
+
+						String dbName = textFieldDBName.getText();
 						
-						String driver = textFieldDriver.getText();
+						String db = textFieldDB.getText();
 						
 						Environment env = Environment.getInstance();
-						env.prepare(user, password, url, driver);
+						env.prepare(user, password, host, dbName, db);
 						
 						dispose();
 						
