@@ -17,7 +17,7 @@ import java.io.IOException;
 */
 public class Operation {
 
-    private SimpleDateFormat dateFormat;
+    private static SimpleDateFormat dateFormat;
     
     private static Logger logger;
 
@@ -34,6 +34,8 @@ public class Operation {
         } catch (IOException e) {  
             e.printStackTrace();  
         }
+
+        dateFormat = new SimpleDateFormat("dd-MM-yyyy", Locale.ENGLISH);
     }
 
     /**
@@ -69,10 +71,7 @@ public class Operation {
      * @param tags          tags
      */
     public Operation(final int id, final BigDecimal sum, final Date date,
-                     final String description, final String... tags) {        
-        
-
-        dateFormat = new SimpleDateFormat("dd-MM-yyyy", Locale.ENGLISH);
+                     final String description, final String... tags) {
         this.id = id;
         this.sum = sum;
         this.date = date;

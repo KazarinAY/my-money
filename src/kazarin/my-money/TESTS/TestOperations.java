@@ -6,11 +6,12 @@ import static org.junit.Assert.assertEquals;
 import kazarin.my_money.model.Operations;
 import kazarin.my_money.model.Operation;
 import kazarin.my_money.model.WrongCommandException;
+import kazarin.my_money.db.DBTypes;
 import java.math.BigDecimal;
 import java.io.IOException;
 
 public class TestOperations {	
-	Operations operations = Operations.getInstance(true);
+	Operations operations = Operations.getInstance(DBTypes.TEST);
 
 //ADD
 

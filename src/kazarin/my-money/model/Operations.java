@@ -1,11 +1,20 @@
 package kazarin.my_money.model;
 
-import kazarin.my_money.db.OperationsDao;
 import kazarin.my_money.db.Dao;
+import kazarin.my_money.db.MySqlDao;
+import kazarin.my_money.db.HSqlDao;
 import kazarin.my_money.db.StubDao;
+import kazarin.my_money.db.DBTypes;
 
 import java.util.logging.*;
 
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.Files;
+import java.io.BufferedWriter;
+import java.io.FileWriter;
+import java.io.BufferedReader;
+import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -57,51 +66,48 @@ public final class Operations {
     /**
      * Aimple date format.
      */
-    private SimpleDateFormat dateFormat;
+    private SimpleDateFormat dateFormat;    
 
     /**
      * Constructor.
      */
-    private Operations() {        
-        list = new ArrayList<>();
-        dateFormat = new SimpleDateFormat("dd-MM-yyyy", Locale.ENGLISH);
-        dao = new OperationsDao();
-        logger.info("new Operations Constructed");
-    }
+    private Operations(DBTypes type) {
 
-    /**
-     * Constructor.
-     */
-    private Operations(boolean isStub) {
-        if (isStub) {            
-            dao = new StubDao();
-            list = new ArrayList<>();
-            dateFormat = new SimpleDateFormat("dd-MM-yyyy", Locale.ENGLISH);
-            logger.info("new test Operations Constructed");
-        } else {
+        switch (type) {
             
+            case TEST:
+                dao = new StubDao();                
+                logger.info("new TEST Operations Constructed");
+                break;
+            
+            case MYSQL:                
+                dao = new MySqlDao();
+                logger.info("new MYSQL Operations Constructed");
+                break;
+            
+            case HSQL:                
+                dao = new HSqlDao();
+                logger.info("new MYSQL Operations Constructed");
+                break;
+
+            default:
+                logger.warning("something wrong with DBTypes");
+                break;
         }
-                
+
+        dateFormat = new SimpleDateFormat("dd-MM-yyyy", Locale.ENGLISH);
+        list = new ArrayList<>();
+        list = dao.getAll();
+
     }    
 
     /**
      * Gets instance of Operations.
      * @return instance
      */
-    public static Operations getInstance() {
+    public static Operations getInstance(DBTypes type) {
         if (instance == null) {
-            instance = new Operations();
-        }
-        return instance;
-    }
-
-    /**
-     * Gets instance of Operations.
-     * @return instance
-     */
-    public static Operations getInstance(boolean isStub) {
-        if (instance == null) {
-            instance = new Operations(isStub);
+            instance = new Operations(type);
         }
         return instance;
     }
@@ -109,7 +115,7 @@ public final class Operations {
     /**
      * Shows all operations list.
      */
-    public void showAllList() {
+    public void printAllList() {
         System.out.println("All list:");
         for (Operation el : list) {
             System.out.println(el);
@@ -417,6 +423,68 @@ public final class Operations {
                          : ops.getList() != null) return false;
 
         return true;
+    }
+
+        /**
+     * Saves list to txt file.
+     * @param fileName      path to file.
+     */
+    public void saveToTxt(String fileName) {
+        Path file = Paths.get(fileName);
+        if (Files.exists(file)) {
+            try (BufferedWriter bw = new BufferedWriter(
+                                                    new FileWriter(fileName))) {                
+                ;
+                for (Operation op : list) {
+                    bw.write(op.toCommandString());
+                    bw.newLine();
+                }
+                logger.info("Saved");
+
+            } catch (IOException e) {
+                logger.warning("ERROR: failed to save data to file "
+                                                                    + fileName);
+            }
+        } else {
+            try {
+                Files.createFile(file);
+            } catch (IOException e) {
+                logger.warning("ERROR: failed to create "
+                                                        + fileName + " file!");
+            }
+            saveToTxt(fileName);             // recursive calling
+        }
+
+    }
+
+    /**
+     * Loads list from txt file.
+     * @param fileName      path to file.
+     */
+    public void loadFromTxt(String fileName) {
+        Path file = Paths.get(fileName);
+        if (!Files.exists(file)) {
+            logger.warning("LOAD" + fileName + " file not found.");
+            return;
+        }
+        
+        try (BufferedReader reader =
+                    new BufferedReader(new FileReader(fileName))) {
+
+            String readedLine = "";
+            while (reader.ready()) {
+                readedLine = reader.readLine();                
+                add(readedLine);
+            }            
+
+        } catch (WrongCommandException wce) {
+            logger.warning("ERROR: failed to load data from"
+                                                        + fileName + " file!");
+            logger.warning("");
+        } catch (IOException e) {
+                logger.warning("ERROR: failed to load data from"
+                                                        + fileName + " file!");
+            }
     }
 
 }

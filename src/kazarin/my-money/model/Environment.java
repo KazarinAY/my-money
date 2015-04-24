@@ -1,5 +1,7 @@
 package kazarin.my_money.model;
 
+import kazarin.my_money.db.DBTypes;
+
 import java.util.logging.*;
 
 import java.nio.file.Path;
@@ -18,8 +20,23 @@ import java.util.Properties;
  * Singletone.
  */
 public final class Environment {
-    private Logger logger;
+    private static Logger logger;
     
+    static {
+        try {
+            logger = Logger.getLogger(Environment.class.getName());
+            FileHandler fh = new FileHandler("/tmp/Environment.log");  
+            logger.addHandler(fh);
+            SimpleFormatter formatter = new SimpleFormatter();  
+            fh.setFormatter(formatter); 
+            logger.setUseParentHandlers(false);
+        } catch (SecurityException e) {  
+            e.printStackTrace();  
+        } catch (IOException e) {  
+            e.printStackTrace();  
+        }
+    }
+
     /**
      * Properties.
      */
@@ -44,19 +61,7 @@ public final class Environment {
      * Constructor.
      * Creates .properties file and directories if they don't exist.
      */
-    private Environment() {
-        try {
-            logger = Logger.getLogger(Environment.class.getName());
-            FileHandler fh = new FileHandler("/tmp/Environment.log");  
-            logger.addHandler(fh);
-            SimpleFormatter formatter = new SimpleFormatter();  
-            fh.setFormatter(formatter); 
-            logger.setUseParentHandlers(false);
-        } catch (SecurityException e) {  
-            e.printStackTrace();  
-        } catch (IOException e) {  
-            e.printStackTrace();  
-        }
+    private Environment() {        
 
         String directory = System.getProperty("user.home") + "/mymoney";
         this.propertyDir = Paths.get(directory);
@@ -68,20 +73,20 @@ public final class Environment {
                 createDirectories();
             }            
             createProperiesFile();
-            properties = new Properties();
-            properties.setProperty("txtDataFile", directory + "/data.txt");
             try {
+                properties = new Properties();
                 properties.store(new FileWriter(propertyFile.toString()),
-                                                                    "comment");
+                                                                        "comment");
             } catch (IOException e) {
-                logger.warning("ERROR: failed to store properties file.");
+                    logger.warning("ERROR: failed to load properties file.");
             }
-        }
-        try {
-            properties = new Properties();
-            properties.load(new FileReader(propertyFile.toString()));
-        } catch (IOException e) {
-                logger.warning("ERROR: failed to load properties file.");
+        } else {
+            try {
+                properties = new Properties();
+                properties.load(new FileReader(propertyFile.toString()));
+            } catch (IOException e) {
+                    logger.warning("ERROR: failed to load properties file.");
+            }
         }
     }
 
@@ -93,78 +98,6 @@ public final class Environment {
             instance = new Environment();
         }
         return instance;
-    }
-
-    /**
-     * @return String   Returns path to text data file.
-     */
-    public String getTxtDataFile(){
-        return properties.getProperty("txtDataFile");
-    }
-
-    /**
-     * Saves list to txt file.
-     * @param fileName      path to file.
-     */
-    public void saveToTxt(String fileName) {
-        Path file = Paths.get(fileName);
-        if (Files.exists(file)) {
-            try (BufferedWriter bw = new BufferedWriter(
-                                                    new FileWriter(fileName))) {
-
-                Operations operations = Operations.getInstance();
-                List<Operation> list = operations.getList();
-                for (Operation op : list) {
-                    bw.write(op.toCommandString());
-                    bw.newLine();
-                }
-                logger.info("Saved");
-
-            } catch (IOException e) {
-                logger.warning("ERROR: failed to save data to file "
-                                                                    + fileName);
-            }
-        } else {
-            try {
-                Files.createFile(file);
-            } catch (IOException e) {
-                logger.warning("ERROR: failed to create "
-                                                        + fileName + " file!");
-            }
-            saveToTxt(fileName);             // recursive calling
-        }
-
-    }
-
-    /**
-     * Loads list from txt file.
-     * @param fileName      path to file.
-     */
-    public void loadFromTxt(String fileName) {
-        Path file = Paths.get(fileName);
-        if (!Files.exists(file)) {
-            logger.warning("LOAD" + fileName + " file not found.");
-            return;
-        }
-        
-        try (BufferedReader reader =
-                    new BufferedReader(new FileReader(fileName))) {
-
-            Operations operations = Operations.getInstance();
-            String readedLine = "";
-            while (reader.ready()) {
-                readedLine = reader.readLine();                
-                operations.add(readedLine);
-            }            
-
-        } catch (WrongCommandException wce) {
-            logger.warning("ERROR: failed to load data from"
-                                                        + fileName + " file!");
-            logger.warning("");
-        } catch (IOException e) {
-                logger.warning("ERROR: failed to load data from"
-                                                        + fileName + " file!");
-            }
     }
 
     /**
@@ -197,6 +130,7 @@ public final class Environment {
     public boolean isReady() {
         if (       properties.getProperty("user") == null
                 || properties.getProperty("password") == null
+                || properties.getProperty("DB type") == null
                 || properties.getProperty("url") == null
                 || properties.getProperty("driver") == null) {
             logger.info("ISREADY: environment isn't ready");
@@ -206,7 +140,7 @@ public final class Environment {
         return true;
     }
 
-    public void prepare(String user, String password, String url, String db) {
+    public void prepare(String user, String password, String host, String dbName, String db) {
         //user = "guest";
         //password = "12345678";   
         //url = "jdbc:mysql://localhost/MYMONEY";
@@ -214,11 +148,13 @@ public final class Environment {
         properties.setProperty("user", user);
         properties.setProperty("password", password);
         if (db.equals("MySQL")){
-             properties.setProperty("driver", "com.mysql.jdbc.Driver");
-             properties.setProperty("url", "jdbc:mysql:" + url);
+            properties.setProperty("DB type", "MySQL");
+            properties.setProperty("driver", "com.mysql.jdbc.Driver");
+            properties.setProperty("url", "jdbc:mysql:" + "//" + host + "/" + dbName);
         } else if (db.equals("HSQL")) {
+            properties.setProperty("DB type", "HSQL");
             properties.setProperty("driver", "org.hsqldb.jdbc.JDBCDriver");
-            properties.setProperty("url", "jdbc:hsqldb:file:" + url);            
+            properties.setProperty("url", "jdbc:mysql:" + "//" + host + "/" + dbName);            
         } else {
             logger.info("PREPARE: unknown DB");
         }
@@ -231,4 +167,9 @@ public final class Environment {
         }
     }
     
+    public DBTypes getDBType() {
+        if (properties.getProperty("DB type").equals("MySQL")) return DBTypes.MYSQL;
+        if (properties.getProperty("DB type").equals("HSQL")) return DBTypes.HSQL;
+        return null;
+    }
 }

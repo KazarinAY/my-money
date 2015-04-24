@@ -24,6 +24,20 @@ public class MainScreen extends JFrame{
     private static MainScreen instance;
 
     private static Logger logger;
+    static {
+    	try {
+            logger = Logger.getLogger(MainScreen.class.getName());
+            FileHandler fh = new FileHandler("/tmp/MainScreen.log");  
+            logger.addHandler(fh);
+            SimpleFormatter formatter = new SimpleFormatter();  
+            fh.setFormatter(formatter); 
+            logger.setUseParentHandlers(false);
+        } catch (SecurityException e) {  
+            e.printStackTrace();  
+        } catch (IOException e) {  
+            e.printStackTrace();  
+        }
+    }
 	
 	private JTabbedPane tabbedPane;
 	private OperationListPanel operationListPanel;
@@ -66,18 +80,7 @@ public class MainScreen extends JFrame{
      * The main method is where the main screen are created.
      */
 	public static void main(String[] args){
-		try {
-            logger = Logger.getLogger(MainScreen.class.getName());
-            FileHandler fh = new FileHandler("/tmp/MainScreen.log");  
-            logger.addHandler(fh);
-            SimpleFormatter formatter = new SimpleFormatter();  
-            fh.setFormatter(formatter); 
-            logger.setUseParentHandlers(false);
-        } catch (SecurityException e) {  
-            e.printStackTrace();  
-        } catch (IOException e) {  
-            e.printStackTrace();  
-        }
+		
 
 		JFrame frame = new JFrame();
 		

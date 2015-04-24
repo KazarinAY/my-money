@@ -1,11 +1,11 @@
 package kazarin.my_money;
 
 import java.util.logging.*;
-import kazarin.my_money.db.OperationsDao;
+
 import kazarin.my_money.model.Operations;
-import kazarin.my_money.model.Operation;
 import kazarin.my_money.model.Environment;
 import kazarin.my_money.model.WrongCommandException;
+
 import java.io.IOException;
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
@@ -86,11 +86,9 @@ public final class Main {
 	}
 
 	private static void runCommandLine(BufferedReader reader) throws IOException {
-		Environment env = Environment.getInstance();
-		OperationsDao opDao = new OperationsDao();
+		Environment env = Environment.getInstance();		
 
-		Operations ops = Operations.getInstance();
-		ops.setList(opDao.getAll());
+		Operations ops = Operations.getInstance(env.getDBType());		
 		ops.printStatistic();
 
 		printEnterCommand();
@@ -99,7 +97,7 @@ public final class Main {
 			String line = reader.readLine();
 
 			switch (line.split(" ")[0]) {
-				case "show": 		ops.showAllList();
+				case "show": 		ops.printAllList();
 									printEnterCommand();
 									break;
 
@@ -139,7 +137,7 @@ public final class Main {
 									break;
 
 				case "saveto":  	try {
-										env.saveToTxt(getFileName(line));
+										ops.saveToTxt(getFileName(line));
 									} catch (WrongCommandException e) {
 										printWrongCommand();
 									}
@@ -147,7 +145,7 @@ public final class Main {
 									break;
 
 				case "loadfrom": 	try {
-										env.loadFromTxt(getFileName(line));
+										ops.loadFromTxt(getFileName(line));
 									} catch (WrongCommandException e) {
 										printWrongCommand();
 									}
@@ -173,14 +171,17 @@ public final class Main {
 		System.out.print("password: ");
 		String password = reader.readLine();
 		
-		System.out.print("url: ");
-		String url = reader.readLine();
+		System.out.print("host: ");
+		String host = reader.readLine();
+
+		System.out.print("DB name: ");
+		String dbName = reader.readLine();
 		
 		System.out.print("DB (MySQL or HSQL): ");
 		String db = reader.readLine();
 		
 		Environment env = Environment.getInstance();
-		env.prepare(user, password, url, db);			
+		env.prepare(user, password, host, dbName, db);			
 		
 	}
 }
