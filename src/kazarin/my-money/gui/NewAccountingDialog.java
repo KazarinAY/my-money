@@ -70,6 +70,11 @@ public class NewAccountingDialog extends JDialog {
 						Environment env = Environment.getInstance();
 						env.createNewAccounting(user, password,
 															host, dbName, db);
+
+						AccountingPanel ap = AccountingPanel.getInstance();
+						ap.addNewJRButton(dbName);
+						OperationListPanel olp = OperationListPanel.getInstance();
+						olp.refreshDataList();
 						
 						dispose();
 						

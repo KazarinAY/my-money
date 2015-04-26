@@ -44,7 +44,7 @@ public abstract class AbstractDao implements Dao<Operation> {
 	/**
 	 * Constracts the AbstractDao.
  	 */
-	public AbstractDao(Properties propertiesDB) {
+	public AbstractDao(Properties propertiesDB) throws DaoException {
 		this.propertiesDB = propertiesDB;
 		url = propertiesDB.getProperty("url");
 		
@@ -54,7 +54,7 @@ public abstract class AbstractDao implements Dao<Operation> {
             logger.info("DRIVER... OK");
         }catch (ClassNotFoundException e) {
             logger.log(Level.WARNING, "ERROR: failed to find driver.", e);
-            
+            throw new DaoException("Failed to find driver.");
         }
         
         try {	
@@ -63,9 +63,9 @@ public abstract class AbstractDao implements Dao<Operation> {
 		} catch(SQLException e) {			
 			logger.log(Level.WARNING, "ERROR: failed to get connection.", e);
 			logger.log(Level.WARNING, "\turl=" + url
-								+ "\n\tuser=" + propertiesDB.getProperty("user")
-								+ "\n\tpassword=" + propertiesDB.getProperty("password"));
-
+						+ "\n\tuser=" + propertiesDB.getProperty("user")
+						+ "\n\tpassword=" + propertiesDB.getProperty("password"));
+			throw new DaoException("Failed to get connectio.");
 		} finally {
 			if (connection != null) {
 				try {
@@ -200,6 +200,51 @@ public abstract class AbstractDao implements Dao<Operation> {
 
 		} catch(SQLException e){
 			System.err.println("ERROR: failed to delete operation.");
+			System.err.println("ERROR: failed to get resultSet.");
+			e.printStackTrace();
+		} finally {
+			if (connection != null) {
+				try {
+					connection.close();
+				} catch (SQLException e) {
+					System.err.println("ERROR: failed to close connection.");
+				}
+			}
+		}
+	}
+
+	public void createDB(String dbName, String sqlFormat, String createTable) {
+		String sql = String.format(sqlFormat, dbName);
+		logger.info("SQL: " + sql);
+		try{
+			connection = DriverManager.getConnection(url, propertiesDB);
+					
+			Statement stmt = connection.createStatement();
+			stmt.executeUpdate(sql);
+
+		} catch(SQLException e){
+			System.err.println("ERROR: failed to createDB.");
+			System.err.println("ERROR: failed to get resultSet.");
+			e.printStackTrace();
+		} finally {
+			if (connection != null) {
+				try {
+					connection.close();
+				} catch (SQLException e) {
+					System.err.println("ERROR: failed to close connection.");
+				}
+			}
+		}
+		sql = createTable;
+		logger.info("SQL: " + sql);
+		try{
+			connection = DriverManager.getConnection(url, propertiesDB);
+					
+			Statement stmt = connection.createStatement();
+			stmt.executeUpdate(sql);
+
+		} catch(SQLException e){
+			System.err.println("ERROR: failed to create table.");
 			System.err.println("ERROR: failed to get resultSet.");
 			e.printStackTrace();
 		} finally {

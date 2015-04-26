@@ -35,7 +35,7 @@ public class MySqlDao extends AbstractDao{
  	/**
 	 * Constracts the MySqlDao.
  	 */
-	public MySqlDao(Properties properties) {	
+	MySqlDao(Properties properties) throws DaoException {	
 		super(properties);
 	}	
  	
@@ -58,5 +58,19 @@ public class MySqlDao extends AbstractDao{
 	@Override
 	public void delete(Operation operation){
 		delete(operation, "DELETE FROM operations WHERE op_id='%s';");
+	}
+
+	@Override
+	public void createDB(String dbName) {
+		String createTable = 	"CREATE TABLE operations ("
+								      + "op_id INT NOT NULL AUTO_INCREMENT, "
+								      + "op_sum NUMERIC(10,2) NOT NULL, "
+								      + "op_date DATE NOT NULL, "
+								      + "op_description VARCHAR(255), "
+								      + "op_tags VARCHAR(255), "
+								      + "PRIMARY KEY (op_id)"
+								+ ");";
+		createDB(dbName, "CREATE DATABASE %s", createTable);
+
 	}
 }

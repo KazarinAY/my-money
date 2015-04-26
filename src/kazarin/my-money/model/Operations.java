@@ -1,10 +1,6 @@
 package kazarin.my_money.model;
 
-import kazarin.my_money.db.Dao;
-import kazarin.my_money.db.MySqlDao;
-import kazarin.my_money.db.HSqlDao;
-import kazarin.my_money.db.StubDao;
-import kazarin.my_money.db.DBTypes;
+import kazarin.my_money.db.*;
 
 import java.util.logging.*;
 
@@ -83,29 +79,7 @@ public final class Operations {
                 logger.log(Level.WARNING, "ERROR: failed to load properties file.", e);
         }
         name = properties.getProperty("dbName");
-        String type = properties.getProperty("DB type");
-        
-        switch (type) {
-            
-            case "TEST":
-                dao = new StubDao();                
-                logger.info("new TEST Operations Constructed");
-                break;
-            
-            case "MySQL":                
-                dao = new MySqlDao(properties);
-                logger.info("new MYSQL Operations Constructed");
-                break;
-            
-            case "HSQL":                
-                dao = new HSqlDao(properties);
-                logger.info("new MYSQL Operations Constructed");
-                break;
-
-            default:
-                logger.warning("something wrong with DBTypes");
-                break;
-        }
+        dao = DaoFactory.getDao(properties);
 
         dateFormat = new SimpleDateFormat("dd-MM-yyyy", Locale.ENGLISH);
         list = new ArrayList<>();

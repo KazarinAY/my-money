@@ -70,9 +70,10 @@ public class ConnectToExistingDialog extends JDialog {
 						Environment env = Environment.getInstance();
 						env.connectToExistingAccounting(user, password,
 															host, dbName, db);						
-						OperationListPanel olp = OperationListPanel.getInstance();
+						
 						AccountingPanel ap = AccountingPanel.getInstance();
 						ap.addNewJRButton(dbName);
+						OperationListPanel olp = OperationListPanel.getInstance();
 						olp.refreshDataList();
 						dispose();
 

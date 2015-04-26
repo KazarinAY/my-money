@@ -161,7 +161,6 @@ public class AccountingPanel extends JPanel implements ActionListener{
 				rButton.setSelected(true);
 				currentAccounting = rButton.getActionCommand();
 				northPanel.revalidate();
-				northPanel.repaint();
-				
+				northPanel.repaint();				
 	}
 }

@@ -35,7 +35,7 @@ public class HSqlDao extends AbstractDao{
  	/**
 	 * Constracts the HSqlDao.
  	 */
-	public HSqlDao(Properties properties) {	
+	HSqlDao(Properties properties) throws DaoException {	
 		super(properties);
 	}
 
@@ -57,6 +57,11 @@ public class HSqlDao extends AbstractDao{
 	@Override
 	public void delete(Operation operation){
 		delete(operation, "DELETE FROM operations WHERE op_id='%s';");
+	}
+
+	@Override
+	public void createDB(String dbName) {
+		/*NON*/
 	}
 
 }
