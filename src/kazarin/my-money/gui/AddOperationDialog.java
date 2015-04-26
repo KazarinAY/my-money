@@ -20,7 +20,7 @@ import java.util.Date;
  *  Is a class for creating a dialog window for adding a operation
  */
 public class AddOperationDialog {
-	private JFrame frame;
+
 	private JDialog dialog;
 	private JTextField textFieldHowMuch;
 	private JTextField textFieldDate;
@@ -31,11 +31,9 @@ public class AddOperationDialog {
 	/**
  	 * Constructs an AddOperationDialog
  	 *
- 	 * @param frame
  	 * @param data model
  	 */
-	public AddOperationDialog(JFrame frame, TableModel tableModel){
-		this.frame = frame;	
+	public AddOperationDialog(TableModel tableModel){
 		this.tableModel = tableModel;
 	}
 	
@@ -43,7 +41,7 @@ public class AddOperationDialog {
  	 * Shows add operation dialog window
  	 */
 	public void show(){
-		dialog = new JDialog(frame, "Add operation:", true);
+		dialog = new JDialog(MainScreen.frame, "Add operation:", true);
 	
 		dialog.setLayout(new GridLayout(5, 2));
 		dialog.setLocation(300, 350);
@@ -95,9 +93,11 @@ public class AddOperationDialog {
 						String tags = textFieldTags.getText();
 						
 						String command = String.format("add %s:%s:%s#%s",
-														howMuch, date, description,tags);
+												howMuch, date, description,tags);
 						Environment env = Environment.getInstance();
-						Operations operations = Operations.getInstance(env.getDBType());
+						AccountingPanel ap = AccountingPanel.getInstance();
+						Operations operations = env.getOperationsByName(ap.getCurrentAccounting());
+						
 						try {
 							operations.add(command);
 						} catch (WrongCommandException wce) {

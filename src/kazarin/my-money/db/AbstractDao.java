@@ -36,18 +36,16 @@ public abstract class AbstractDao implements Dao<Operation> {
         }
 	}
 
-	private Environment environment;
-	protected Properties propertiesDB = new Properties();
+
+	protected Properties propertiesDB;
 	protected Connection connection;
 	protected String url;
 
 	/**
 	 * Constracts the AbstractDao.
  	 */
-	public AbstractDao() {
-		
-		environment = Environment.getInstance();
-        propertiesDB = environment.getPropertiesDB();
+	public AbstractDao(Properties propertiesDB) {
+		this.propertiesDB = propertiesDB;
 		url = propertiesDB.getProperty("url");
 		
 		try {

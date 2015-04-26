@@ -6,8 +6,9 @@ package kazarin.my_money.db;
 import kazarin.my_money.model.Operation;
 
 import java.util.logging.*;
-
 import java.io.IOException;
+
+import java.util.Properties;
 
 /**
  * Provides access to the operations table in database.
@@ -34,8 +35,8 @@ public class HSqlDao extends AbstractDao{
  	/**
 	 * Constracts the HSqlDao.
  	 */
-	public HSqlDao() {	
-		super();
+	public HSqlDao(Properties properties) {	
+		super(properties);
 	}
 
 	@Override

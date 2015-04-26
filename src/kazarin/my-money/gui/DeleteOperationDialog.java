@@ -22,7 +22,6 @@ import javax.swing.table.TableModel;
  * Is a class for creating a dialog window for deleting a operation
  */
 public class DeleteOperationDialog {
-	private JFrame frame;
 	private JDialog dialog;
 	private TableModel tableModel;
 	private int row;
@@ -31,11 +30,9 @@ public class DeleteOperationDialog {
 	/**
  	 * Constructs an DeleteOperationDialog
  	 *
- 	 * @param frame
  	 * @param operation data model
  	 */
-	public DeleteOperationDialog(JFrame frame, TableModel tableModel, int row, Operation operation){
-		this.frame = frame;	
+	public DeleteOperationDialog(TableModel tableModel, int row, Operation operation){
 		this.tableModel = tableModel;
 		this.row = row;
 		this.operation = operation;
@@ -45,7 +42,7 @@ public class DeleteOperationDialog {
  	 * Shows delete operation dialog window
  	 */
 	public void show(){
-		dialog = new JDialog(frame, "Delete operation:", true);
+		dialog = new JDialog(MainScreen.frame, "Delete operation:", true);
 		dialog.setLayout(new GridLayout(5, 2));
 		dialog.setLocation(300, 350);
 		
@@ -78,12 +75,14 @@ public class DeleteOperationDialog {
 			public void actionPerformed(ActionEvent e) {
 				switch(e.getActionCommand()){
 					case "OK": 
-						String command = String.format("delete %d",	operation.getId());
+						String command = String.format("delete %d",
+															operation.getId());
 
 //LOG						System.out.println("Command: " + command);
 						
 						Environment env = Environment.getInstance();
-						Operations operations = Operations.getInstance(env.getDBType());
+						AccountingPanel ap = AccountingPanel.getInstance();
+						Operations operations = env.getOperationsByName(ap.getCurrentAccounting());
 						try {
 							operations.delete(command);
 						} catch (WrongCommandException wce) {

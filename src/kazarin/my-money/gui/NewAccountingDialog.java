@@ -1,6 +1,3 @@
-/*
- * PrepareDialog
- */
 package kazarin.my_money.gui;
 
 import kazarin.my_money.model.Environment;
@@ -13,13 +10,13 @@ import javax.swing.JButton;
 import javax.swing.JLabel;
 import java.awt.GridLayout;
 
-public class PrepareDialog extends JDialog {
+public class NewAccountingDialog extends JDialog {
 		private JTextField textFieldUser;
 		private JTextField textFieldPassword;
 		private JTextField textFieldHost;
 		private JTextField textFieldDBName;
 		private JTextField textFieldDB;
-	public PrepareDialog() {
+	public NewAccountingDialog() {
 		super(MainScreen.frame, "Enter information:", true);
 		setLayout(new GridLayout(6, 2));
 		setLocation(300, 350);
@@ -71,7 +68,7 @@ public class PrepareDialog extends JDialog {
 						String db = textFieldDB.getText();
 						
 						Environment env = Environment.getInstance();
-						env.connectToExistingAccounting(user, password,
+						env.createNewAccounting(user, password,
 															host, dbName, db);
 						
 						dispose();

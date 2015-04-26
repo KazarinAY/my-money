@@ -1,6 +1,3 @@
-/*
- * PrepareDialog
- */
 package kazarin.my_money.gui;
 
 import kazarin.my_money.model.Environment;
@@ -13,13 +10,13 @@ import javax.swing.JButton;
 import javax.swing.JLabel;
 import java.awt.GridLayout;
 
-public class PrepareDialog extends JDialog {
+public class ConnectToExistingDialog extends JDialog {
 		private JTextField textFieldUser;
 		private JTextField textFieldPassword;
 		private JTextField textFieldHost;
 		private JTextField textFieldDBName;
 		private JTextField textFieldDB;
-	public PrepareDialog() {
+	public ConnectToExistingDialog() {
 		super(MainScreen.frame, "Enter information:", true);
 		setLayout(new GridLayout(6, 2));
 		setLocation(300, 350);
@@ -61,21 +58,24 @@ public class PrepareDialog extends JDialog {
 				switch (e.getActionCommand()){
 					case "OK": 
 						String user = textFieldUser.getText();
-						
+
 						String password = textFieldPassword.getText();
-						
+
 						String host = textFieldHost.getText();
 
 						String dbName = textFieldDBName.getText();
 						
 						String db = textFieldDB.getText();
-						
+
 						Environment env = Environment.getInstance();
 						env.connectToExistingAccounting(user, password,
-															host, dbName, db);
-						
+															host, dbName, db);						
+						OperationListPanel olp = OperationListPanel.getInstance();
+						AccountingPanel ap = AccountingPanel.getInstance();
+						ap.addNewJRButton(dbName);
+						olp.refreshDataList();
 						dispose();
-						
+
 						break;
 					case "Cancel":
 						dispose();

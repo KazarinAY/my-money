@@ -28,7 +28,6 @@ import java.util.Date;
  * Is a class for creating a dialog window for changing a group
  */
 public class ChangeOperationDialog {
-	private JFrame frame;
 	private JDialog dialog;
 	private JTextField textFieldSum;
 	private JTextField textFieldDate;
@@ -41,14 +40,12 @@ public class ChangeOperationDialog {
 	/**
  	 * Constructs an ChangeOperationDialog
  	 *
- 	 * @param frame
  	 * @param operation data model
  	 * @param row to change
  	 * @param operation to change
  	 */
-	public ChangeOperationDialog(JFrame frame, TableModel tableModel, 
-														int row, Operation oldOperation){
-		this.frame = frame;	
+	public ChangeOperationDialog(TableModel tableModel, 
+											int row, Operation oldOperation) {
 		this.tableModel = tableModel;
 		this.row = row;
 		this.oldOperation = oldOperation;
@@ -58,7 +55,7 @@ public class ChangeOperationDialog {
  	 * Shows change operation dialog window
  	 */
 	public void show(){
-		dialog = new JDialog(frame, "Change operation:", true);
+		dialog = new JDialog(MainScreen.frame, "Change operation:", true);
 		dialog.setLayout(new GridLayout(5, 2));
 		dialog.setLocation(300, 350);
 		
@@ -113,12 +110,14 @@ public class ChangeOperationDialog {
 						String tags = textFieldTags.getText();						
 						
 						String command = String.format("change %d:%s:%s:%s#%s",
-											oldOperation.getId(), howMuch, date, description, tags);
+													oldOperation.getId(), howMuch,
+													date, description, tags);
 						
 						MyLogger.log(Level.INFO, "Command: " + command);
 						
 						Environment env = Environment.getInstance();
-						Operations operations = Operations.getInstance(env.getDBType());
+						AccountingPanel ap = AccountingPanel.getInstance();
+						Operations operations = env.getOperationsByName(ap.getCurrentAccounting());
 						try {
 							operations.change(command);
 						} catch (WrongCommandException wce) {

@@ -6,8 +6,9 @@ package kazarin.my_money.db;
 import kazarin.my_money.model.Operation;
 
 import java.util.logging.*;
-
 import java.io.IOException;
+
+import java.util.Properties;
 
 /**
  * Provides access to the operations table in database.
@@ -34,8 +35,8 @@ public class MySqlDao extends AbstractDao{
  	/**
 	 * Constracts the MySqlDao.
  	 */
-	public MySqlDao() {	
-		super();
+	public MySqlDao(Properties properties) {	
+		super(properties);
 	}	
  	
  	@Override

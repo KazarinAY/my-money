@@ -1,6 +1,3 @@
-/*
- * OperationListPanel
- */
 package kazarin.my_money.gui;
 
 import kazarin.my_money.model.Operations;
@@ -10,7 +7,6 @@ import kazarin.my_money.model.Environment;
 import javax.swing.JPanel;
 import java.awt.event.ActionListener; 
 import java.awt.event.ActionEvent;
-import javax.swing.JFrame;
 import javax.swing.JTable;
 import javax.swing.JScrollPane;
 import java.awt.Dimension;
@@ -21,6 +17,7 @@ import javax.swing.table.TableColumn;
 import javax.swing.ListSelectionModel;
 import javax.swing.table.AbstractTableModel;
 import java.util.List;
+import java.util.ArrayList;
 import java.math.BigDecimal;
 import java.util.Date;
 
@@ -28,24 +25,29 @@ import java.util.Date;
  * Is a panel with table of groups.
  */
 public class OperationListPanel extends JPanel implements ActionListener{
-
-	private JFrame frame;
+	private static OperationListPanel instance;
+	
 	private JTable table;
-	TableModel tableModel;	
-	private List<Operation> dataList;
+	TableModel tableModel;
+	private Operations operations;
+	public List<Operation> dataList;
+	private JScrollPane scrollPane;
 	
 	/**	
      * Constructs a OperationListPanel.
 	 *
-	 * @param frame is passed to the modal dialogs
 	 */
-	public OperationListPanel(JFrame frame) {
+	private OperationListPanel() {
 		super();
-
-		this.frame = frame;
 		Environment env = Environment.getInstance();
-		Operations operations = Operations.getInstance(env.getDBType());
-		this.dataList = operations.getList();
+		if (env.isReady()){
+			AccountingPanel ap = AccountingPanel.getInstance();		
+			String dbName = ap.getCurrentAccounting();
+			operations = env.getOperationsByName(dbName);
+			dataList = operations.getList();
+		} else {
+			dataList = new ArrayList<Operation>();
+		}		
 		
 		setLayout(new BorderLayout());
 		
@@ -153,7 +155,7 @@ public class OperationListPanel extends JPanel implements ActionListener{
     	column = table.getColumnModel().getColumn(3);
         column.setPreferredWidth(300);
 
-		JScrollPane scrollPane = new JScrollPane(table);
+		scrollPane = new JScrollPane(table);
 
 		table.setPreferredScrollableViewportSize(new Dimension(600, 250));
 		table.setFillsViewportHeight(true);
@@ -181,14 +183,19 @@ public class OperationListPanel extends JPanel implements ActionListener{
 	public void actionPerformed(ActionEvent e) {
 		int selectedRow;
 		Environment env = Environment.getInstance();
-		Operations operations = Operations.getInstance(env.getDBType());
+		
 		switch(e.getActionCommand()) {
 			
-			case "Add": 
-				AddOperationDialog addOperationDialog = new AddOperationDialog(frame, tableModel);
-				addOperationDialog.show();				
+			case "Add":
+				System.out.println("dataList: " + dataList.size()); 
+				AddOperationDialog addOperationDialog = new AddOperationDialog(tableModel);
+				addOperationDialog.show();
+				//operations = env.getOperationsByName();				
 				dataList = operations.getList();
+				System.out.println("dataList: " + dataList.size());
 				table.repaint();
+			//scrollPane.revalidate();
+			//	scrollPane.repaint();
 				break;
 			case "Change": 
 				selectedRow = table.getSelectedRow();
@@ -200,7 +207,7 @@ public class OperationListPanel extends JPanel implements ActionListener{
 				operationToChange.setTags(((String )table.getValueAt(selectedRow, 3)).split(","));
 				operationToChange.setId((Integer )table.getValueAt(selectedRow, 4));
 				ChangeOperationDialog changeOperationDialog	= new ChangeOperationDialog(
-												frame, tableModel, selectedRow, operationToChange);
+												tableModel, selectedRow, operationToChange);
 				changeOperationDialog.show();
 				dataList = operations.getList();
 				table.repaint();
@@ -215,7 +222,7 @@ public class OperationListPanel extends JPanel implements ActionListener{
 				operationToDelete.setTags(((String )table.getValueAt(selectedRow, 3)).split(","));
 				operationToDelete.setId((Integer )table.getValueAt(selectedRow, 4));
 				DeleteOperationDialog deleteOperationDialog = new DeleteOperationDialog(
-												frame, tableModel, selectedRow, operationToDelete);
+												tableModel, selectedRow, operationToDelete);
 				deleteOperationDialog.show();
 				dataList = operations.getList();
 				table.repaint();
@@ -224,5 +231,19 @@ public class OperationListPanel extends JPanel implements ActionListener{
 				break;
 		}
 		
+	}
+
+	public static OperationListPanel getInstance() {
+		if (instance == null) {
+            instance = new OperationListPanel();
+        }
+        return instance;
+	}
+
+	public void refreshDataList() {
+		AccountingPanel ap = AccountingPanel.getInstance();
+		operations = new Operations(ap.getCurrentAccounting());
+		dataList = operations.getList();
+		table.repaint();
 	}
 }

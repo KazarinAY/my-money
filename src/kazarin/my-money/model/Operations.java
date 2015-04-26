@@ -28,15 +28,15 @@ import java.util.Iterator;
 import java.util.StringTokenizer;
 import java.text.ParseException;
 import java.util.Arrays;
+import java.util.Properties;
+import java.io.FileReader;
 
 /**
  * Operations.
- * Singletone.
  */
 public final class Operations {
 
     private static Logger logger;
-
     static {
         try {
             logger = Logger.getLogger(Operations.class.getName());
@@ -51,6 +51,8 @@ public final class Operations {
             e.printStackTrace();  
         }
     }
+
+    private String name;
 
     private Dao<Operation> dao;
     /**
@@ -71,22 +73,32 @@ public final class Operations {
     /**
      * Constructor.
      */
-    private Operations(DBTypes type) {
-
+    public Operations(String dbName) {        
+        String directory = System.getProperty("user.home") + "/mymoney";        
+        String propertyFile = directory + "/" + dbName + ".properties";
+        Properties properties = new Properties();
+        try {
+                properties.load(new FileReader(propertyFile));
+        } catch (IOException e) {
+                logger.log(Level.WARNING, "ERROR: failed to load properties file.", e);
+        }
+        name = properties.getProperty("dbName");
+        String type = properties.getProperty("DB type");
+        
         switch (type) {
             
-            case TEST:
+            case "TEST":
                 dao = new StubDao();                
                 logger.info("new TEST Operations Constructed");
                 break;
             
-            case MYSQL:                
-                dao = new MySqlDao();
+            case "MySQL":                
+                dao = new MySqlDao(properties);
                 logger.info("new MYSQL Operations Constructed");
                 break;
             
-            case HSQL:                
-                dao = new HSqlDao();
+            case "HSQL":                
+                dao = new HSqlDao(properties);
                 logger.info("new MYSQL Operations Constructed");
                 break;
 
@@ -99,18 +111,11 @@ public final class Operations {
         list = new ArrayList<>();
         list = dao.getAll();
 
-    }    
+    }  
 
-    /**
-     * Gets instance of Operations.
-     * @return instance
-     */
-    public static Operations getInstance(DBTypes type) {
-        if (instance == null) {
-            instance = new Operations(type);
-        }
-        return instance;
-    }
+    public String getName() {
+        return name;
+    }  
 
     /**
      * Shows all operations list.
@@ -195,9 +200,10 @@ public final class Operations {
         if (newOp.getSum() == null) throw new WrongCommandException();
         if (newOp.getDate() == null) newOp.setDate(new Date()); 
         newOp.setTags(tagsArr);
-
+        logger.log(Level.INFO, "ADD: list.size() 1: " + list.size());
         dao.add(newOp);
         setList(dao.getAll());
+        logger.log(Level.INFO, "ADD: list.size() 2: " + list.size());
     }
 
     private Date parseDate(String stringDate) throws WrongCommandException{
@@ -260,10 +266,11 @@ public final class Operations {
         int bars = line.replaceAll("[^#]", "").length();
 
         if (colons > 3 || bars > 1 || (bars == 0 && colons == 0 ))
-                                                          throw new WrongCommandException();
+                                              throw new WrongCommandException();
         String[] newTags = null;
         if (bars == 1) {
-            if (line.indexOf('#') < line.lastIndexOf(':')) throw new WrongCommandException();
+            if (line.indexOf('#') < line.lastIndexOf(':')) 
+                                                throw new WrongCommandException();
 
             if (line.indexOf('#') != line.length() - 1) {
                 String argsLine = line.split("#")[1];
