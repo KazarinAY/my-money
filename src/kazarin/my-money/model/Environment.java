@@ -2,8 +2,6 @@ package kazarin.my_money.model;
 
 import kazarin.my_money.db.*;
 
-import java.util.logging.*;
-
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.Files;
@@ -22,21 +20,6 @@ import java.util.Arrays;
  * Singletone.
  */
 public final class Environment {
-    private static Logger logger;    
-    static {
-        try {
-            logger = Logger.getLogger(Environment.class.getName());
-            FileHandler fh = new FileHandler("/tmp/Environment.log");  
-            logger.addHandler(fh);
-            SimpleFormatter formatter = new SimpleFormatter();  
-            fh.setFormatter(formatter); 
-            logger.setUseParentHandlers(false);
-        } catch (SecurityException e) {  
-            e.printStackTrace();  
-        } catch (IOException e) {  
-            e.printStackTrace();  
-        }
-    }
 
     private List<Operations> accountings;
     
@@ -66,12 +49,12 @@ public final class Environment {
      * Constructor.
      * Creates .properties file and directories if they don't exist.
      */
-    private Environment() {        
+    private Environment() throws ModelException {        
 
         directory = System.getProperty("user.home") + "/mymoney";
         this.propertyDir = Paths.get(directory);
         this.propertyFile = Paths.get(directory + "/mymoney.properties");
-        logger.info("directory = " + directory + "\n\t" + "propertyFile = " + this.propertyFile);
+        ModelLogger.info("directory = " + directory + "\n\t" + "propertyFile = " + this.propertyFile);
         accountings = new ArrayList<Operations>();
         if (!Files.exists(propertyFile)) {
             if (!Files.exists(this.propertyDir)) {
@@ -83,29 +66,29 @@ public final class Environment {
                 properties.store(new FileWriter(propertyFile.toString()),
                                                                     "comment");
             } catch (IOException e) {
-                    logger.warning("ERROR: failed to store properties file.");
+                    ModelLogger.warning("Failed to store properties file.");
             }
         } else {
             try {
                 properties = new Properties();
                 properties.load(new FileReader(propertyFile.toString()));
                 String accountingsList = properties.getProperty("dbNames");
-                    logger.info("accountingsList: " + accountingsList);
+                    ModelLogger.info("accountingsList: " + accountingsList);
                 String[] opsArray = accountingsList.split(",");
                 for (String ops : opsArray) {
                     accountings.add(new Operations(ops.trim()));
                 }
                 
             } catch (IOException e) {
-                    logger.warning("ERROR: failed to load properties file.");
-            }
+                    ModelLogger.warning("Failed to load properties file.");
+            } 
         }
     }
 
     /**
      * @return instanse of Environment
      */
-    public static Environment getInstance() {
+    public static Environment getInstance() throws ModelException {
         if (instance == null) {
             instance = new Environment();
         }
@@ -119,7 +102,7 @@ public final class Environment {
         try {
             Files.createFile(path);
         } catch (IOException e) {
-            logger.warning("ERROR: failed to create data file!");
+            ModelLogger.warning("Failed to create data file!");
         }
     }
     
@@ -129,9 +112,9 @@ public final class Environment {
     private void createDirectories() {
         try {
             Files.createDirectories(propertyDir);
-            logger.info(propertyDir + "created");
+            ModelLogger.info(propertyDir + "created");
         } catch (IOException e) {
-            logger.warning("ERROR: failed to create property directories!");
+            ModelLogger.warning("Failed to create property directories!");
         }
     }
 
@@ -141,23 +124,30 @@ public final class Environment {
 
     public boolean isReady() {
         if ( properties.getProperty("dbNames") == null) {                
-            logger.info("ISREADY: environment isn't ready");
+            ModelLogger.info("ISREADY: environment isn't ready");
             return false;
         }
-        logger.info("ISREADY: environment is ready");
+        ModelLogger.info("ISREADY: environment is ready");
         return true;
     }
 
     public void createNewAccounting(String user, String password, String host,
-                                                    String dbName, String db){
+                                String dbName, String db) throws ModelException {
         Properties pr = createProperiesDB(user, password, host, dbName, db);
-        Dao dao = DaoFactory.getDao(pr);        
         addNewDbToProperties(dbName);
-        
+        try {
+            Dao<Operation> dao = DaoFactory.getDao(pr);
+            dao.createDB(dbName);
+        } catch (DaoException de) {
+            ModelLogger.warning("Failed to createNewAccounting");
+            throw new ModelException("createNewAccounting faild.\t"
+                                                        + de.getMessage());
+        }     
+
     }
 
     public void connectToExistingAccounting(String user, String password,
-                                    String host, String dbName, String db) {
+                    String host, String dbName, String db) throws ModelException {
             createProperiesDB(user, password, host, dbName, db);
             accountings.add(new Operations(dbName));
             addNewDbToProperties(dbName);
@@ -175,13 +165,13 @@ public final class Environment {
                 properties.store(new FileWriter(propertyFile.toString()),
                                                                     "comment");
             } catch (IOException e) {
-                    logger.warning("ERROR: failed to addNewDbToProperties.");
+                    ModelLogger.warning("Failed to addNewDbToProperties.");
             }
     }
 
     private Properties createProperiesDB(String user, String password,
                                     String host, String dbName, String db) {
-        logger.info("createProperiesDB");
+        ModelLogger.info("createProperiesDB");
             Path pathToFile = Paths.get(directory + "/" + dbName + ".properties");
             createProperiesFile(pathToFile);
             Properties newProps = new Properties();
@@ -199,13 +189,13 @@ public final class Environment {
                     newProps.setProperty("url", "jdbc:mysql:" + "//" + host
                                                                 + "/" + dbName);            
                 } else {
-                    logger.info("createProperiesDB: unknown DB");
+                    ModelLogger.info("createProperiesDB: unknown DB");
                 }
             
             try {
                 newProps.store(new FileWriter(pathToFile.toString()), "comment");
             }  catch (IOException e) {
-                logger.warning("createProperiesDB: "
+                ModelLogger.warning("createProperiesDB: "
                                             + "failed to stote properties file.");
             } 
             return newProps;
@@ -218,7 +208,7 @@ public final class Environment {
         for (Operations ops : accountings) {
             if (ops.getName().equals(dbName)) return ops;
         }
-        logger.warning("failed to getOperationsByName");
+        ModelLogger.warning("failed to getOperationsByName");
         return null;
     }
 }

@@ -2,8 +2,6 @@ package kazarin.my_money.model;
 
 import kazarin.my_money.db.*;
 
-import java.util.logging.*;
-
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.Files;
@@ -32,22 +30,6 @@ import java.io.FileReader;
  */
 public final class Operations {
 
-    private static Logger logger;
-    static {
-        try {
-            logger = Logger.getLogger(Operations.class.getName());
-            FileHandler fh = new FileHandler("/tmp/Operations.log");  
-            logger.addHandler(fh);
-            SimpleFormatter formatter = new SimpleFormatter();  
-            fh.setFormatter(formatter); 
-            logger.setUseParentHandlers(false);
-        } catch (SecurityException e) {  
-            e.printStackTrace();  
-        } catch (IOException e) {  
-            e.printStackTrace();  
-        }
-    }
-
     private String name;
 
     private Dao<Operation> dao;
@@ -69,21 +51,29 @@ public final class Operations {
     /**
      * Constructor.
      */
-    public Operations(String dbName) {        
-        String directory = System.getProperty("user.home") + "/mymoney";        
+    public Operations(String dbName) throws ModelException {
+        dateFormat = new SimpleDateFormat("dd-MM-yyyy", Locale.ENGLISH);
+        list = new ArrayList<>();
+        String directory = System.getProperty("user.home") + "/mymoney";
         String propertyFile = directory + "/" + dbName + ".properties";
         Properties properties = new Properties();
         try {
                 properties.load(new FileReader(propertyFile));
         } catch (IOException e) {
-                logger.log(Level.WARNING, "ERROR: failed to load properties file.", e);
+            ModelLogger.warning("Failed to load properties file.", e);
+            throw new ModelException("Operations Constructor faild.\t"
+                                                        + e.getMessage());
         }
         name = properties.getProperty("dbName");
-        dao = DaoFactory.getDao(properties);
-
-        dateFormat = new SimpleDateFormat("dd-MM-yyyy", Locale.ENGLISH);
-        list = new ArrayList<>();
-        list = dao.getAll();
+        try {
+            dao = DaoFactory.getDao(properties);
+            list = dao.getAll();
+        } catch (DaoException de) {
+            ModelLogger.warning("Failed to getDao");
+            throw new ModelException("Operations Constructor faild.\t"
+                                                        + de.getMessage());
+        }
+        
 
     }  
 
@@ -104,6 +94,7 @@ public final class Operations {
     /**
      * Prints operations statistic.
      */
+//TODO kill it
     public void printStatistic() {
         if (list.size() == 0) {
             System.out.println("No operations");
@@ -128,20 +119,23 @@ public final class Operations {
     /**
      * Adds an operation to the operations list.
      * @param line      command line
-     * @throws WrongCommandException if bad command line
+     * @throws ModelException if bad command line
      */
-    public void add(String line) throws WrongCommandException {        
-        logger.log(Level.INFO,"ADD: Line: " + line);
-        if (line == null || line.equals("")) throw new WrongCommandException();
+    public void add(String line) throws ModelException {        
+        ModelLogger.info("ADD: Line: " + line);
+        if (line == null || line.equals("")) 
+            throw new ModelException("line == null || line.equals(\"\")");
 
-        if (!line.startsWith("add ")) throw new WrongCommandException();
+        if (!line.startsWith("add ")) 
+            throw new ModelException("!line.startsWith(\"add \")");
 
         line = line.substring(4); //size of "add "
 
         int colons = line.replaceAll("[^:]", "").length();
         int bars = line.replaceAll("[^#]", "").length();
 
-        if (colons > 2 || bars > 1) throw new WrongCommandException();
+        if (colons > 2 || bars > 1) 
+            throw new ModelException("colons > 2 || bars > 1");
 
         BigDecimal summ = null;
         Date date = null;
@@ -150,7 +144,8 @@ public final class Operations {
 
         if (bars == 1 ) {            
             if (line.indexOf('#') != line.length() - 1){
-                if (line.indexOf('#') < line.lastIndexOf(':')) throw new WrongCommandException();
+                if (line.indexOf('#') < line.lastIndexOf(':')) 
+                    throw new ModelException("line.indexOf('#') < line.lastIndexOf(':')");
 
                 String argsLine = line.split("#")[1];
                 tagsArr = argsLine.split(",");
@@ -158,46 +153,49 @@ public final class Operations {
                 for (int i = 0; i < tagsArr.length; i++) {
                     tagsArr[i] = tagsArr[i].trim();
                 }
-                logger.log(Level.INFO, "ADD: tagsArr = " + tagsArr.length + " "
+                ModelLogger.info( "ADD: tagsArr = " + tagsArr.length + " "
                                                                     + Arrays.toString(tagsArr));
             }
             line = line.split("#")[0];
         }
 
         String[] tokens = line.split(":");        
-        logger.log(Level.INFO, "ADD: Line to parse: " + line);
+        ModelLogger.info( "ADD: Line to parse: " + line);
         Operation newOp = parseOperation(tokens);
 
-        logger.log(Level.INFO, "ADD: after parse: " + newOp.getSum() + " " + newOp.getDate() + " "
+        ModelLogger.info( "ADD: after parse: " + newOp.getSum() + " " + newOp.getDate() + " "
                                                     + newOp.getDescription() );
         
-        if (newOp.getSum() == null) throw new WrongCommandException();
+        if (newOp.getSum() == null) 
+            throw new ModelException("newOp.getSum() == null");
         if (newOp.getDate() == null) newOp.setDate(new Date()); 
         newOp.setTags(tagsArr);
-        logger.log(Level.INFO, "ADD: list.size() 1: " + list.size());
+        ModelLogger.info( "ADD: list.size() 1: " + list.size());
         dao.add(newOp);
         setList(dao.getAll());
-        logger.log(Level.INFO, "ADD: list.size() 2: " + list.size());
+        ModelLogger.info( "ADD: list.size() 2: " + list.size());
     }
 
-    private Date parseDate(String stringDate) throws WrongCommandException{
+    private Date parseDate(String stringDate) throws ModelException{
         try {
             return dateFormat.parse(stringDate); 
         } catch (ParseException pe) {
-            throw new WrongCommandException();
+            throw new ModelException("parseDate ParseException");
         }
     }
 
     /**
      * Deletes an operation from the operations list.
      * @param line      command line
-     * @throws WrongCommandException if bad command line
+     * @throws ModelException if bad command line
      */
-    public void delete(String line) throws WrongCommandException {
-        logger.log(Level.INFO,"DELETE: Line: " + line);
-        if (line == null || line.equals("")) throw new WrongCommandException();
+    public void delete(String line) throws ModelException {
+        ModelLogger.info("DELETE: Line: " + line);
+        if (line == null || line.equals("")) 
+            throw new ModelException("line == null || line.equals(\"\")");
 
-        if (!line.startsWith("delete ")) throw new WrongCommandException();
+        if (!line.startsWith("delete ")) 
+            throw new ModelException("!line.startsWith(\"delete \")");
         
         line = line.substring(7);  //size of "delete "
         line = line.trim();
@@ -218,7 +216,7 @@ public final class Operations {
             setList(dao.getAll());
 
         } catch (NumberFormatException e) {
-            throw new WrongCommandException();
+            throw new ModelException("delete NumberFormatException");
         }
 
     }
@@ -226,13 +224,15 @@ public final class Operations {
     /**
      * Changes an operation in operations list.
      * @param line      command line
-     * @throws WrongCommandException if bad command line
+     * @throws ModelException if bad command line
      */
-    public void change(String line) throws WrongCommandException {        
-        logger.log(Level.INFO, "CHANGE: Line: " + line);
-        if (line == null || line.equals("")) throw new WrongCommandException();
+    public void change(String line) throws ModelException {        
+        ModelLogger.info( "CHANGE: Line: " + line);
+        if (line == null || line.equals("")) 
+            throw new ModelException("line == null || line.equals(\"\")");
 
-        if (!line.startsWith("change ")) throw new WrongCommandException();
+        if (!line.startsWith("change ")) 
+            throw new ModelException("!line.startsWith(\"change \")");
 
         line = line.substring(7); //size of "change "
 
@@ -240,15 +240,15 @@ public final class Operations {
         int bars = line.replaceAll("[^#]", "").length();
 
         if (colons > 3 || bars > 1 || (bars == 0 && colons == 0 ))
-                                              throw new WrongCommandException();
+            throw new ModelException("colons > 3 || bars > 1 || (bars == 0 && colons == 0 )");
         String[] newTags = null;
         if (bars == 1) {
             if (line.indexOf('#') < line.lastIndexOf(':')) 
-                                                throw new WrongCommandException();
+                throw new ModelException("line.indexOf('#') < line.lastIndexOf(':')");
 
             if (line.indexOf('#') != line.length() - 1) {
                 String argsLine = line.split("#")[1];
-                logger.log(Level.INFO, "CHANGE: argsLine: " + argsLine);
+                ModelLogger.info( "CHANGE: argsLine: " + argsLine);
                 newTags = argsLine.split(",");
             } else {
                 newTags = new String[0];
@@ -263,29 +263,30 @@ public final class Operations {
         }
 
         String[] newTokens = line.split(":");
-        logger.log(Level.INFO, "CHANGE: newTokens = " + newTokens.length + " "
+        ModelLogger.info( "CHANGE: newTokens = " + newTokens.length + " "
                                                                     + Arrays.toString(newTokens));
         if (newTokens.length > 0) {
             try {
                 idToFind = Integer.parseInt(newTokens[0].trim());
             } catch (NumberFormatException nfe){
-                throw new WrongCommandException();
+                throw new ModelException("change NumberFormatException");
             }
         }
-        logger.log(Level.INFO, "CHANGE: idToFind: " + idToFind);
+        ModelLogger.info( "CHANGE: idToFind: " + idToFind);
 
-        logger.log(Level.INFO, "CHANGE: size(): " + size());
+        ModelLogger.info( "CHANGE: size(): " + size());
 
         int index = findOperationIndexById(idToFind);
-        logger.log(Level.INFO, "CHANGE: index: " + index);
-        if (index == -1) throw new WrongCommandException();
+        ModelLogger.info( "CHANGE: index: " + index);
+        if (index == -1) 
+            throw new ModelException("index == -1");
 
         String[] parameters = new String[newTokens.length - 1];
         for (int i = 0; i < parameters.length; i++) {
             parameters[i] = newTokens[i + 1];
         }
 
-        logger.log(Level.INFO, "CHANGE: parameters = " + parameters.length + " "
+        ModelLogger.info( "CHANGE: parameters = " + parameters.length + " "
                                                                     + Arrays.toString(parameters));
         Operation changeOp = parseOperation(parameters);       
 
@@ -300,52 +301,55 @@ public final class Operations {
 
     }
 
-    private Operation parseOperation(String[] prmtrs) throws WrongCommandException {
-        logger.log(Level.INFO, "\tparseOperation start: ");      
+    private Operation parseOperation(String[] prmtrs) throws ModelException {
+        ModelLogger.info( "\tparseOperation start: ");      
 
         Operation operation = new Operation();
-        logger.log(Level.INFO, "\tparseOperation operation: " + operation.toString());
+        ModelLogger.info( "\tparseOperation operation: " + operation.toString());
         if (prmtrs.length > 0) {
-            logger.log(Level.INFO, "\tparseOperation 0: " + prmtrs[0]);
+            ModelLogger.info( "\tparseOperation 0: " + prmtrs[0]);
             parseWordForOperation(operation, prmtrs, 0);
         }
 
         if (prmtrs.length > 1) {
-            logger.log(Level.INFO, "\tparseOperation 1: " + prmtrs[1]);
+            ModelLogger.info( "\tparseOperation 1: " + prmtrs[1]);
             parseWordForOperation(operation, prmtrs, 1);
         }
 
         if (prmtrs.length > 2) {
-            logger.log(Level.INFO, "\tparseOperation 2: " + prmtrs[2]);
+            ModelLogger.info( "\tparseOperation 2: " + prmtrs[2]);
             parseWordForOperation(operation, prmtrs, 2);
         }
 
-        logger.log(Level.INFO, "\tparseOperation end:" + operation.getSum() + " " + operation.getDate() + " "
+        ModelLogger.info( "\tparseOperation end:" + operation.getSum() + " " + operation.getDate() + " "
                                                     + operation.getDescription() );
         return operation;
     }
 
-    private void parseWordForOperation(Operation operation, String[] prmtrs, int index) 
-                                                                throws WrongCommandException {
+    private void parseWordForOperation(Operation operation, String[] prmtrs,
+                                                int index) throws ModelException {
         // "[+-]?(?:\\d+(?:\\.\\d*)?|\\.\\d+)(?:[eE][+-]?\\d+)?"
-        logger.log(Level.INFO, "\t\tparseWordForOperation: " + prmtrs[index]);
-        //if (prmtrs[index].trim().equals("")) throw new WrongCommandException();
+        ModelLogger.info( "\t\tparseWordForOperation: " + prmtrs[index]);
+        //if (prmtrs[index].trim().equals("")) throw new ModelException();
 
         if (prmtrs[index].trim().matches("[+-]?(?:\\d+(?:\\.\\d+)?|\\.\\d+)")) {
-            if (operation.getSum() != null) throw new WrongCommandException();
+            if (operation.getSum() != null) 
+                throw new ModelException("operation.getSum() != null");
             operation.setSum(new BigDecimal(prmtrs[index].trim()));            
         } else if (prmtrs[index].trim().matches("\\d{2}-\\d{2}-\\d{4}")) {
-            if (operation.getDate() != null) throw new WrongCommandException();
+            if (operation.getDate() != null) 
+                throw new ModelException("operation.getDate() != null");
             try {
                     operation.setDate(dateFormat.parse(prmtrs[index].trim()));
                 } catch (ParseException pe) {
-                    throw new WrongCommandException();
+                    throw new ModelException("ParseException");
                 }
         } else {
-            if (operation.getDescription() != null) throw new WrongCommandException();
+            if (operation.getDescription() != null) 
+                throw new ModelException("operation.getDescription() != null");
             operation.setDescription(prmtrs[index].trim());
         }
-        logger.log(Level.INFO, "\t\tparseWordForOperation: good");
+        ModelLogger.info( "\t\tparseWordForOperation: good");
     }
 
     /**
@@ -421,17 +425,17 @@ public final class Operations {
                     bw.write(op.toCommandString());
                     bw.newLine();
                 }
-                logger.info("Saved");
+                ModelLogger.info("Saved");
 
             } catch (IOException e) {
-                logger.warning("ERROR: failed to save data to file "
+                ModelLogger.warning("Failed to save data to file "
                                                                     + fileName);
             }
         } else {
             try {
                 Files.createFile(file);
             } catch (IOException e) {
-                logger.warning("ERROR: failed to create "
+                ModelLogger.warning("Failed to create "
                                                         + fileName + " file!");
             }
             saveToTxt(fileName);             // recursive calling
@@ -446,7 +450,7 @@ public final class Operations {
     public void loadFromTxt(String fileName) {
         Path file = Paths.get(fileName);
         if (!Files.exists(file)) {
-            logger.warning("LOAD" + fileName + " file not found.");
+            ModelLogger.warning("LOAD" + fileName + " file not found.");
             return;
         }
         
@@ -459,12 +463,12 @@ public final class Operations {
                 add(readedLine);
             }            
 
-        } catch (WrongCommandException wce) {
-            logger.warning("ERROR: failed to load data from"
+        } catch (ModelException wce) {
+            ModelLogger.warning("Failed to load data from"
                                                         + fileName + " file!");
-            logger.warning("");
+            ModelLogger.warning("");
         } catch (IOException e) {
-                logger.warning("ERROR: failed to load data from"
+                ModelLogger.warning("Failed to load data from"
                                                         + fileName + " file!");
             }
     }

@@ -1,7 +1,5 @@
 package kazarin.my_money.model;
 
-import java.util.logging.*;
-
 import java.util.Date;
 import java.text.SimpleDateFormat;
 import java.util.Locale;
@@ -18,23 +16,7 @@ import java.io.IOException;
 public class Operation {
 
     private static SimpleDateFormat dateFormat;
-    
-    private static Logger logger;
-
-    static {
-        try {
-            logger = Logger.getLogger(Operation.class.getName());
-            FileHandler fh = new FileHandler("/tmp/Operation.log");  
-            logger.addHandler(fh);
-            SimpleFormatter formatter = new SimpleFormatter();  
-            fh.setFormatter(formatter); 
-            logger.setUseParentHandlers(false);
-        } catch (SecurityException e) {  
-            e.printStackTrace();  
-        } catch (IOException e) {  
-            e.printStackTrace();  
-        }
-
+    static {      
         dateFormat = new SimpleDateFormat("dd-MM-yyyy", Locale.ENGLISH);
     }
 
@@ -83,9 +65,8 @@ public class Operation {
                 this.tags.add(tag);
             }
         }
-
-        logger.info("new Operation Constructed");
-        logger.info(toString());
+        ModelLogger.info("new Operation Constructed");
+        ModelLogger.info(toString());
     }
 
     /**

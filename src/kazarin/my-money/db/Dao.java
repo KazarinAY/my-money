@@ -11,33 +11,33 @@ public interface Dao<T> {
 	 *
 	 * @return list of rows
 	 */
-	public List<T> getAll() throws DaoException;
+	public List<T> getAll();
 	
 	/**
 	 * Adds the row to table.
 	 *
 	 * @param row to adding to table
 	 */
-	public void add(T object) throws DaoException;
+	public void add(T object);
 	
 	/**
 	 * Updates the row in the table.
 	 *
 	 * @param the row to which you want to update
 	 */
-	public void update(T object) throws DaoException;
+	public void update(T object);
 	
 	/**
 	 * Deletes the row frome table.
 	 *
 	 * @param the row to delete
 	 */
-	public void delete(T object) throws DaoException;
+	public void delete(T object);
 
 	/**
 	 * Creates new DB.
 	 *
 	 * @param name of DB
 	 */
-	public void createDB(String dbName) throws DaoException;
+	public void createDB(String dbName);
 }

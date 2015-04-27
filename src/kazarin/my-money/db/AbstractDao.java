@@ -2,7 +2,6 @@ package kazarin.my_money.db;
 
 import kazarin.my_money.model.Operation;
 
-import java.util.logging.*;
 import java.util.Properties;
 import java.sql.Connection;
 import java.util.List;
@@ -15,27 +14,7 @@ import java.sql.ResultSet;
 import java.text.SimpleDateFormat;
 import java.util.Locale;
 
-import kazarin.my_money.model.Environment;
-
 public abstract class AbstractDao implements Dao<Operation> {
-
-	private static Logger logger;
-
-	static {
-		try {
-            logger = Logger.getLogger(AbstractDao.class.getName());
-            FileHandler fh = new FileHandler("/tmp/AbstractDao.log");  
-            logger.addHandler(fh);
-            SimpleFormatter formatter = new SimpleFormatter();  
-            fh.setFormatter(formatter); 
-            logger.setUseParentHandlers(false);
-        } catch (SecurityException e) {  
-            e.printStackTrace();  
-        } catch (IOException e) {  
-            e.printStackTrace();  
-        }
-	}
-
 
 	protected Properties propertiesDB;
 	protected Connection connection;
@@ -49,20 +28,20 @@ public abstract class AbstractDao implements Dao<Operation> {
 		url = propertiesDB.getProperty("url");
 		
 		try {
-			logger.info("DRIVER: " + propertiesDB.getProperty("driver"));
+			DBLogger.info("DRIVER: " + propertiesDB.getProperty("driver"));
             Class.forName(propertiesDB.getProperty("driver"));
-            logger.info("DRIVER... OK");
+            DBLogger.info("DRIVER... OK");
         }catch (ClassNotFoundException e) {
-            logger.log(Level.WARNING, "ERROR: failed to find driver.", e);
+            DBLogger.warning("Failed to find driver.", e);
             throw new DaoException("Failed to find driver.");
         }
         
         try {	
 			connection = DriverManager.getConnection(url, propertiesDB);
-			logger.info("CONNECTION... OK");
+			DBLogger.info("CONNECTION... OK");
 		} catch(SQLException e) {			
-			logger.log(Level.WARNING, "ERROR: failed to get connection.", e);
-			logger.log(Level.WARNING, "\turl=" + url
+			DBLogger.warning("Failed to get connection.", e);
+			DBLogger.warning("\turl=" + url
 						+ "\n\tuser=" + propertiesDB.getProperty("user")
 						+ "\n\tpassword=" + propertiesDB.getProperty("password"));
 			throw new DaoException("Failed to get connectio.");
@@ -71,7 +50,7 @@ public abstract class AbstractDao implements Dao<Operation> {
 				try {
 					connection.close();
 				} catch (SQLException e) {
-					logger.log(Level.WARNING, "ERROR: failed to close connection.", e);
+					DBLogger.warning("Failed to close connection.", e);
 				}				
 			}
 		}
@@ -81,16 +60,16 @@ public abstract class AbstractDao implements Dao<Operation> {
 	@Override
 	public List<Operation> getAll(){
 		String sql = "SELECT * FROM operations;";
-		logger.info("SQL: " + sql);
+		DBLogger.info("SQL: " + sql);
 		List<Operation> list = new ArrayList<Operation>();
 		ResultSet rs = null;
 		try{
 			connection = DriverManager.getConnection(url, propertiesDB);
-			logger.info("CONNECTION... OK");
+			DBLogger.info("CONNECTION... OK");
 			Statement stmt = connection.createStatement();
-			logger.info("Statement... OK");
+			DBLogger.info("Statement... OK");
 			rs = stmt.executeQuery(sql);
-			logger.info("ResultSet... OK");
+			DBLogger.info("ResultSet... OK");
 			
 			while(rs.next()){
 				Operation operation = new Operation();
@@ -102,14 +81,13 @@ public abstract class AbstractDao implements Dao<Operation> {
 				list.add(operation);
 			}
 		} catch(SQLException e){
-			logger.warning("ERROR: failed to get all.");
-			logger.log(Level.WARNING, "ERROR: failed to get resultSet.", e);			
+			DBLogger.warning("Failed to get all.", e);
 		} finally {
 			if (connection != null) {
 				try {
 					connection.close();
 				} catch (SQLException e) {
-					logger.log(Level.WARNING, "ERROR: failed to close connection.", e);
+					DBLogger.warning("Failed to close connection.", e);
 				}
 			}
 		}
@@ -126,7 +104,7 @@ public abstract class AbstractDao implements Dao<Operation> {
 		String tags = operation.getTagsStr();
 		String sql = String.format(	sqlFormat,
 									howMuch, date, description, tags);
-		logger.info("SQL: " + sql);
+		DBLogger.info("SQL: " + sql);
 		
 		try{
 			connection = DriverManager.getConnection(url, propertiesDB);
@@ -135,15 +113,13 @@ public abstract class AbstractDao implements Dao<Operation> {
 			stmt.executeUpdate(sql);			
 
 		} catch(SQLException e){
-			System.err.println("ERROR: failed to add operation.");
-			System.err.println("ERROR: failed to get resultSet.");
-			e.printStackTrace();
+			DBLogger.warning("RROR: Failed to add operation.", e);
 		} finally {
 			if (connection != null) {
 				try {
 					connection.close();
 				} catch (SQLException e) {
-					System.err.println("ERROR: failed to close connection.");
+					DBLogger.warning("Failed to close connection.", e);
 				}				
 			}
 		}
@@ -163,7 +139,7 @@ public abstract class AbstractDao implements Dao<Operation> {
 									description, tags,
 									idStr);
 		
-		logger.info("SQL: " + sql);
+		DBLogger.info("SQL: " + sql);
 		
 		try{
 			connection = DriverManager.getConnection(url, propertiesDB);
@@ -172,15 +148,13 @@ public abstract class AbstractDao implements Dao<Operation> {
 			stmt.executeUpdate(sql);
 
 		} catch(SQLException e){
-			System.err.println("ERROR: failed to update operation.");
-			System.err.println("ERROR: failed to get resultSet.");
-			e.printStackTrace();
+			DBLogger.warning("Failed to update operation.", e);
 		} finally {
 			if (connection != null) {
 				try {
 					connection.close();
 				} catch (SQLException e) {
-					System.err.println("ERROR: failed to close connection.");
+					DBLogger.warning("Failed to close connection.", e);
 				}
 			}
 		}
@@ -190,7 +164,7 @@ public abstract class AbstractDao implements Dao<Operation> {
 		String id = String.valueOf(operation.getId());
 
 		String sql = String.format(sqlFormat, id);
-		logger.info("SQL: " + sql);
+		DBLogger.info("SQL: " + sql);
 		
 		try{
 			connection = DriverManager.getConnection(url, propertiesDB);
@@ -199,15 +173,13 @@ public abstract class AbstractDao implements Dao<Operation> {
 			stmt.executeUpdate(sql);
 
 		} catch(SQLException e){
-			System.err.println("ERROR: failed to delete operation.");
-			System.err.println("ERROR: failed to get resultSet.");
-			e.printStackTrace();
+			DBLogger.warning("Failed to delete operation.", e);
 		} finally {
 			if (connection != null) {
 				try {
 					connection.close();
 				} catch (SQLException e) {
-					System.err.println("ERROR: failed to close connection.");
+					DBLogger.warning("Failed to close connection.", e);
 				}
 			}
 		}
@@ -215,7 +187,7 @@ public abstract class AbstractDao implements Dao<Operation> {
 
 	public void createDB(String dbName, String sqlFormat, String createTable) {
 		String sql = String.format(sqlFormat, dbName);
-		logger.info("SQL: " + sql);
+		DBLogger.info("SQL: " + sql);
 		try{
 			connection = DriverManager.getConnection(url, propertiesDB);
 					
@@ -223,20 +195,18 @@ public abstract class AbstractDao implements Dao<Operation> {
 			stmt.executeUpdate(sql);
 
 		} catch(SQLException e){
-			System.err.println("ERROR: failed to createDB.");
-			System.err.println("ERROR: failed to get resultSet.");
-			e.printStackTrace();
+			DBLogger.warning("Failed to createDB.", e);
 		} finally {
 			if (connection != null) {
 				try {
 					connection.close();
 				} catch (SQLException e) {
-					System.err.println("ERROR: failed to close connection.");
+					DBLogger.warning("Failed to close connection.", e);
 				}
 			}
 		}
 		sql = createTable;
-		logger.info("SQL: " + sql);
+		DBLogger.info("SQL: " + sql);
 		try{
 			connection = DriverManager.getConnection(url, propertiesDB);
 					
@@ -244,15 +214,13 @@ public abstract class AbstractDao implements Dao<Operation> {
 			stmt.executeUpdate(sql);
 
 		} catch(SQLException e){
-			System.err.println("ERROR: failed to create table.");
-			System.err.println("ERROR: failed to get resultSet.");
-			e.printStackTrace();
+			DBLogger.warning("Failed to create table.", e);
 		} finally {
 			if (connection != null) {
 				try {
 					connection.close();
 				} catch (SQLException e) {
-					System.err.println("ERROR: failed to close connection.");
+					DBLogger.warning("Failed to close connection.", e);
 				}
 			}
 		}
