@@ -44,7 +44,7 @@ public abstract class AbstractDao implements Dao<Operation> {
 			DBLogger.warning("\turl=" + url
 						+ "\n\tuser=" + propertiesDB.getProperty("user")
 						+ "\n\tpassword=" + propertiesDB.getProperty("password"));
-			throw new DaoException("Failed to get connectio.");
+			throw new DaoException("Failed to get connection.");
 		} finally {
 			if (connection != null) {
 				try {
@@ -185,7 +185,9 @@ public abstract class AbstractDao implements Dao<Operation> {
 		}
 	}
 
-	public void createDB(String dbName, String sqlFormat, String createTable) {
+	public void createDB(String dbName, String sqlFormat,
+								String createTable) throws DaoException{
+
 		String sql = String.format(sqlFormat, dbName);
 		DBLogger.info("SQL: " + sql);
 		try{
@@ -205,16 +207,18 @@ public abstract class AbstractDao implements Dao<Operation> {
 				}
 			}
 		}
+		
 		sql = createTable;
 		DBLogger.info("SQL: " + sql);
 		try{
 			connection = DriverManager.getConnection(url, propertiesDB);
-					
+
 			Statement stmt = connection.createStatement();
 			stmt.executeUpdate(sql);
 
 		} catch(SQLException e){
-			DBLogger.warning("Failed to create table.", e);
+			DBLogger.warning("Failed to create table.");			
+			throw new DaoException(e.getMessage());
 		} finally {
 			if (connection != null) {
 				try {

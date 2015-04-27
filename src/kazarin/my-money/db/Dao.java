@@ -39,5 +39,5 @@ public interface Dao<T> {
 	 *
 	 * @param name of DB
 	 */
-	public void createDB(String dbName);
+	public void createDB(String dbName) throws DaoException;
 }

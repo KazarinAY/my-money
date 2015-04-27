@@ -1,6 +1,7 @@
 package kazarin.my_money.gui;
 
 import kazarin.my_money.model.Environment;
+import kazarin.my_money.model.ModelException;
 
 import javax.swing.JDialog;
 import java.awt.event.ActionEvent;
@@ -9,15 +10,22 @@ import javax.swing.JTextField;
 import javax.swing.JButton;
 import javax.swing.JLabel;
 import java.awt.GridLayout;
+import javax.swing.JComboBox;
 
 public class NewAccountingDialog extends JDialog {
+		
+		private String[] result;
+
 		private JTextField textFieldUser;
 		private JTextField textFieldPassword;
 		private JTextField textFieldHost;
 		private JTextField textFieldDBName;
 		private JTextField textFieldDB;
+		private JComboBox<String> dbList;
+	
 	public NewAccountingDialog() {
 		super(FrameHolder.getFrame(), "Enter information:", true);
+
 		setLayout(new GridLayout(6, 2));
 		setLocation(300, 350);
 		
@@ -25,6 +33,7 @@ public class NewAccountingDialog extends JDialog {
 		add(labelUser);
 		
 		textFieldUser = new JTextField(20);
+		textFieldUser.setText(System.getProperty("user.name"));
 		add(textFieldUser);
 		
 		JLabel labelPassword = new JLabel("Password:");
@@ -46,39 +55,49 @@ public class NewAccountingDialog extends JDialog {
 		textFieldDBName = new JTextField(20);
 		add(textFieldDBName);
 		
-		JLabel labelDB = new JLabel("DB (MySQL or HSQL):");
+		JLabel labelDB = new JLabel("DB (HSQL only):");
 		add(labelDB);
-		
+		String[] dbStrings = {"HSQL"};
+		dbList = new JComboBox<String>(dbStrings);
+		dbList.setSelectedIndex(0);
+		dbList.setEditable(false);
+		add(dbList);
+		/*
 		textFieldDB = new JTextField(20);
 		textFieldDB.setText("MySQL");
-		add(textFieldDB);
+		add(textFieldDB);*/
 		ActionListener actionListener = new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				switch (e.getActionCommand()){
 					case "OK": 
 						String user = textFieldUser.getText();
-						
+						if (user.equals("")) break;
 						String password = textFieldPassword.getText();
 						
 						String host = textFieldHost.getText();
-
+						if (host.equals("")) break;
 						String dbName = textFieldDBName.getText();
+						if (dbName.equals("")) break;
+						String db = (String) dbList.getSelectedItem();
+						if (db.equals("")) break;
+						result = new String[2];
+						result[0] = dbName;
 						
-						String db = textFieldDB.getText();
-						
-						Environment env = Environment.getInstance();
-						env.createNewAccounting(user, password,
-															host, dbName, db);
+						try {
+							Environment env = Environment.getInstance();
+							env.createNewAccounting(user, password,
+															host, dbName, db);							
+							result[1] = "OK";						
+						} catch (ModelException me) {
+							String message = me.getMessage();
+							GuiLogger.warning("env.createNewAccounting\n" + message);
+							result[1] = message;
+						}
 
-						AccountingPanel ap = AccountingPanel.getInstance();
-						ap.addNewJRButton(dbName);
-						OperationListPanel olp = OperationListPanel.getInstance();
-						olp.refreshDataList();
-						
 						dispose();
-						
 						break;
+					
 					case "Cancel":
 						dispose();
 						break;
@@ -96,5 +115,9 @@ public class NewAccountingDialog extends JDialog {
 		
 		pack();
 		setVisible(true);
+	}
+
+	public String[] getResultDbName() {
+		return result;
 	}
 }

@@ -41,7 +41,7 @@ public class MySqlDao extends AbstractDao{
 	}
 
 	@Override
-	public void createDB(String dbName) {
+	public void createDB(String dbName) throws DaoException {
 		String createTable = 	"CREATE TABLE operations ("
 								      + "op_id INT NOT NULL AUTO_INCREMENT, "
 								      + "op_sum NUMERIC(10,2) NOT NULL, "

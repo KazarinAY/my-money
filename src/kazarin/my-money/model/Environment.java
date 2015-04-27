@@ -57,22 +57,9 @@ public final class Environment {
         ModelLogger.info("directory = " + directory + "\n\t" + "propertyFile = " + this.propertyFile);
         accountings = new ArrayList<Operations>();
         properties = new Properties();
-        if (!Files.exists(propertyFile)) {
-            /*
-            if (!Files.exists(this.propertyDir)) {
-                createDirectories();
-            }            
-            createProperiesFile(propertyFile);
-            try {
-                properties = new Properties();
-                properties.store(new FileWriter(propertyFile.toString()),
-                                                                    "comment");
-            } catch (IOException e) {
-                    ModelLogger.warning("Failed to store properties file.");
-            }
-            */
+        if (!Files.exists(propertyFile)) {        
             ModelLogger.warning("Property File doesn't exist.");
-            throw new ModelException("Property File doesn't exist.");            
+            //throw new ModelException("Property File doesn't exist.");            
         } else {
             try {                
                 properties.load(new FileReader(propertyFile.toString()));
@@ -105,6 +92,7 @@ public final class Environment {
     private void createProperiesFile(Path path) {
         try {
             Files.createFile(path);
+            ModelLogger.info("File " + path + " created.");
         } catch (IOException e) {
             ModelLogger.warning("Failed to create data file!");
         }
@@ -137,19 +125,31 @@ public final class Environment {
 
     public void createNewAccounting(String user, String password, String host,
                                 String dbName, String db) throws ModelException {
-        if (!Files.exists(propertyDir)) {
-            createDirectories();
-        }
-        createProperiesFile(propertyFile);
-        Properties pr = createProperiesDB(user, password, host, dbName, db);
-        addNewDbToProperties(dbName);
+        ModelLogger.info("Start creating...");
+        Properties pr = createProperiesDB(user, password, host, dbName, db);             
         try {
             Dao<Operation> dao = DaoFactory.getDao(pr);
             dao.createDB(dbName);
+            if (!Files.exists(propertyFile)) {
+                if (!Files.exists(propertyDir)) {
+                    createDirectories();
+                }
+                createProperiesFile(propertyFile);
+                addNewDbToProperties(dbName); 
+            }
         } catch (DaoException de) {
+            Path pathToFile = Paths.get(directory + "/" + dbName + ".properties");
+            try {
+                Files.delete(pathToFile);
+            } catch (IOException ioe) {
+                ModelLogger.warning(ioe.getMessage());
+            }
+            
             ModelLogger.warning("Failed to createNewAccounting");
             throw new ModelException("createNewAccounting faild.\t"
                                                         + de.getMessage());
+
+
         }     
 
     }
@@ -194,7 +194,7 @@ public final class Environment {
             } else if (db.equals("HSQL")) {
                 newProps.setProperty("DB type", "HSQL");
                 newProps.setProperty("driver", "org.hsqldb.jdbc.JDBCDriver");
-                newProps.setProperty("url", "jdbc:mysql:" + "//" + host
+                newProps.setProperty("url", "jdbc:hsqldb:" + ":" + host
                                                             + "/" + dbName);            
             } else {
                 ModelLogger.info("createProperiesDB: unknown DB");

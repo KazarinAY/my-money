@@ -17,6 +17,7 @@ import javax.swing.JRadioButton;
 import javax.swing.ButtonGroup;
 import javax.swing.JButton;
 import javax.swing.JTextArea;
+import javax.swing.JOptionPane;
 
 import java.awt.BorderLayout;
 import java.awt.GridLayout;
@@ -39,13 +40,16 @@ import java.math.BigDecimal;
  * with two panels that contains tables.
  */
 public class MainScreen extends JPanel{
+	private static final String CONNECT_TO_EXISTING = "Connect to existing";
+	private static final String NEW_ACCOUNTING = "New accounting";
 
 	private Environment env;
 	private Operations operations;
 	private List<Operations> accList;
 	private List<Operation> opList;
 
-	private JFrame frame;	
+	private JFrame frame;
+	private ActionListener actionListener;	
 	//WEST
 	private JTable table;
 	private TableModel tableModel;
@@ -71,16 +75,57 @@ public class MainScreen extends JPanel{
 	/**	
 	 * Constructs a MainScreen and displays it.
 	 */
-	private MainScreen(JFrame frame){
+	private MainScreen(final JFrame frame){
 		super(new BorderLayout());		
 		
-		ActionListener actionListener = new ActionListener() {
+		actionListener = new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				GuiLogger.info("ACTION: " + e.getActionCommand());
+				String command = e.getActionCommand();
+				
+				switch (command) {
+					case CONNECT_TO_EXISTING:
+						GuiLogger.info("ACTION: " + command);
+						break;
+					case NEW_ACCOUNTING:
+						if (accList.size() > 5) {
+							JOptionPane.showMessageDialog(frame,
+                                    "Alredy to mutch accountings.",
+                                    "Warning",
+                                    JOptionPane.WARNING_MESSAGE);
+						}
+						NewAccountingDialog dialog = new NewAccountingDialog();
+						String[] result = dialog.getResultDbName();
+						if (result == null) break; //if Canceled
+						if (!result[1].equals("OK")) {
+							textArea.append("\n" + result[1]);
+							break;
+						}
+						GuiLogger.info("resultDbName: " + result[0]);
+						if (!isAlredyExists(result[0])) {
+							addNewJRButton(result[0]);
+							textArea.append("\n" + result[1]);
+						} else {
+							textArea.append("\n" + "such accounting alredy exists");
+						}
+				
+						break;
+					default:
+						GuiLogger.info("ACTION: " + command);
+						break;
+
+				}
 			}
 		};
 		accList = new ArrayList<Operations>(); // = env.getAccountings();
+		opList = new ArrayList<Operation>(); 
+		try {
+			env = Environment.getInstance();
+			accList = env.getAccountings();
+		} catch (ModelException me) {
+			textArea.setText(me.getMessage());
+			GuiLogger.warning("Environment.getInstance()");
+		}
 		bunchOfButtons = new ArrayList<BunchOfButtons>();
 		buttonGroup = new ButtonGroup();
 		if (accList.size() > 0) {
@@ -95,10 +140,14 @@ public class MainScreen extends JPanel{
 			}
 			bunchOfButtons.get(0).getJRButton().setSelected(true);
 			currentAccounting = bunchOfButtons.get(0).getJRButton().getActionCommand();
-			CurrentAccountingHolder.setCurrentAccounting(currentAccounting);
+
 			for (BunchOfButtons btn : bunchOfButtons) {
 				buttonGroup.add(btn.getJRButton());
 			}
+
+			operations = env.getOperationsByName(currentAccounting);
+			opList = operations.getList();
+
 		}
 		eastPanel = new JPanel(new GridLayout(3, 0));
 		newEntry = new JButton("New Entry");
@@ -113,11 +162,11 @@ public class MainScreen extends JPanel{
 		eastPanel.add(radioButtonsPanel);
 		buttonsPanel = new JPanel(new GridLayout(2, 0));
 		
-		createNewButton = new JButton("New accounting");		
+		createNewButton = new JButton(NEW_ACCOUNTING);		
 		createNewButton.addActionListener(actionListener);
 		buttonsPanel.add(createNewButton);
        
-		conToExButton = new JButton("Connect to existing");
+		conToExButton = new JButton(CONNECT_TO_EXISTING);
 		conToExButton.addActionListener(actionListener);
         buttonsPanel.add(conToExButton);	
 		
@@ -126,7 +175,7 @@ public class MainScreen extends JPanel{
 		add(eastPanel, BorderLayout.EAST);
 
 		southPanel = new JPanel(new FlowLayout());
-		labelTextErea = new JTextArea("total income:\n"
+		labelTextErea = new JTextArea("total income\n"
 							 + "total consumption:\n"
 							 + "balance:", 3, 20);
 		labelTextErea.setEditable(false);
@@ -137,29 +186,18 @@ public class MainScreen extends JPanel{
 		statTextArea.setEditable(false);
 		southPanel.add(statTextArea);
 
-		textArea = new JTextArea(3, 40);
+		textArea = new JTextArea(5, 40);
 		scrollPaneForText = new JScrollPane(textArea); 
 		textArea.setEditable(false);
 		southPanel.add(scrollPaneForText);
 		add(southPanel, BorderLayout.SOUTH);
 		
-		try {
-			env = Environment.getInstance();			
-		} catch (ModelException me) {
-			textArea.setText(me.getMessage());
-			GuiLogger.warning("Environment.getInstance()");
-		}
 
-		/*
-		String dbName = ap.getCurrentAccounting();
-		operations = env.getOperationsByName(dbName);
-		dataList = operations.getList();
-		*/
-		opList = new ArrayList<Operation>(); 
+		
 
 		table = new JTable();
 		tableModel = new AbstractTableModel() {	
-			private String[] columnNames = {"How Much",
+			private String[] columnNames = {"Sum",
 								            "Date",
 								            "Description",
 								            "Tags",
@@ -297,6 +335,37 @@ public class MainScreen extends JPanel{
         frame.pack();
         frame.setVisible(true);
     }
+    public void addNewJRButton(String dbName) {
+    			try {
+					Operations newOps = new Operations(dbName);
+					accList.add(newOps);
+					JRadioButton rButton = new JRadioButton(dbName);
+					rButton.addActionListener(actionListener);
+					JButton edit = new JButton("edit");
+					edit.addActionListener(actionListener);
+					JButton del = new JButton("del");
+					del.addActionListener(actionListener);
+					bunchOfButtons.add(new BunchOfButtons(rButton, edit, del));
+					buttonGroup.add(rButton);
+					radioButtonsPanel.add(rButton);
+					radioButtonsPanel.add(edit);
+					radioButtonsPanel.add(del);
+					rButton.setSelected(true);
+					currentAccounting = rButton.getActionCommand();					
+				} catch (ModelException me) {
+					textArea.append("\n" + me.getMessage());
+				}							
+				revalidate();
+				repaint();				
+	}
+
+	public boolean isAlredyExists(String newAcc) {
+		for (Operations ops : accList) {
+			if (ops.getName().equals(newAcc))
+				return true;
+		}
+		return false;
+	}
 
     public static void main(String[] args) {
         //Schedule a job for the event-dispatching thread:

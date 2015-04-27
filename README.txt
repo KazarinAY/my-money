@@ -11,11 +11,10 @@ Then, create operations table - see create_table.sql
 ---------------------------------------------------------
 
 To run:
-	my-money$ bash runSwing.sh
+	my-money$ bash run.sh
 
 To compile:
 	my-money$ bash compile.sh
-	my-money$ bash compileSwing.sh
-
+	
 ---------------------------------------------------------
 
