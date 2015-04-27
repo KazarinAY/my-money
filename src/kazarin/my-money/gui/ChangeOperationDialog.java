@@ -6,11 +6,7 @@ package kazarin.my_money.gui;
 import kazarin.my_money.model.Operations;
 import kazarin.my_money.model.Operation;
 import kazarin.my_money.model.Environment;
-import kazarin.my_money.model.WrongCommandException;
-
-import kazarin.my_money.MyLogger;
-
-import java.util.logging.Level;
+import kazarin.my_money.model.ModelException;
 
 import javax.swing.JFrame;
 import java.awt.event.ActionEvent;
@@ -55,7 +51,7 @@ public class ChangeOperationDialog {
  	 * Shows change operation dialog window
  	 */
 	public void show(){
-		dialog = new JDialog(MainScreen.frame, "Change operation:", true);
+		dialog = new JDialog(FrameHolder.getFrame(), "Change operation:", true);
 		dialog.setLayout(new GridLayout(5, 2));
 		dialog.setLocation(300, 350);
 		
@@ -113,18 +109,18 @@ public class ChangeOperationDialog {
 													oldOperation.getId(), howMuch,
 													date, description, tags);
 						
-						MyLogger.log(Level.INFO, "Command: " + command);
-						
+						GuiLogger.info("Command: " + command);
+						/*
 						Environment env = Environment.getInstance();
 						AccountingPanel ap = AccountingPanel.getInstance();
 						Operations operations = env.getOperationsByName(ap.getCurrentAccounting());
 						try {
 							operations.change(command);
-						} catch (WrongCommandException wce) {
+						} catch (ModelException wce) {
 							textFieldSum.setText("Wrong command!");
 							break;
 						}
-										
+						*/				
 						dialog.dispose();
 						
 						break;

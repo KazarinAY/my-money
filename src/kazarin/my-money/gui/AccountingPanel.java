@@ -2,6 +2,7 @@ package kazarin.my_money.gui;
 
 import kazarin.my_money.model.Operations;
 import kazarin.my_money.model.Environment;
+import kazarin.my_money.model.ModelException;
 
 import javax.swing.JPanel;
 import java.awt.event.ActionListener; 
@@ -22,8 +23,6 @@ import java.util.Date;
  */
 public class AccountingPanel extends JPanel implements ActionListener{
 
-	public static AccountingPanel instance;
-
 	public String currentAccounting;
 
 	private List<Operations> dataList;
@@ -38,11 +37,14 @@ public class AccountingPanel extends JPanel implements ActionListener{
      * Constructs a AccountingPanel.
 	 *
 	 */
-	private AccountingPanel() {
+	public AccountingPanel() {
 		super();
-
-		Environment env = Environment.getInstance();
-		dataList = env.getAccountings();
+		try {
+			Environment env = Environment.getInstance();
+			dataList = env.getAccountings();
+		} catch (ModelException me) {
+			GuiLogger.warning("Environment.getInstance()");
+		}		
 		bunchOfButtons = new ArrayList<BunchOfButtons>();
 		buttonGroup = new ButtonGroup();
 		if (dataList.size() > 0) {
@@ -57,7 +59,7 @@ public class AccountingPanel extends JPanel implements ActionListener{
 			}
 			bunchOfButtons.get(0).getJRButton().setSelected(true);
 			currentAccounting = bunchOfButtons.get(0).getJRButton().getActionCommand();
-			
+			CurrentAccountingHolder.setCurrentAccounting(currentAccounting);
 			for (BunchOfButtons btn : bunchOfButtons) {
 				buttonGroup.add(btn.getJRButton());
 			}
@@ -90,22 +92,11 @@ public class AccountingPanel extends JPanel implements ActionListener{
 	
 	@Override
 	public void actionPerformed(ActionEvent e) {
+		String command = buttonGroup.getSelection().getActionCommand();		
 
-		switch(e.getActionCommand()) {
-			
-			case "New accounting": 				
-				System.out.println(e.getActionCommand());
-				NewAccountingDialog newDialog = new NewAccountingDialog();
-				break;
-			case "Connect to existing": 
-				System.out.println(e.getActionCommand());
-				ConnectToExistingDialog exDialog = new ConnectToExistingDialog();
-				break;
-			default:
-				System.out.println(e.getActionCommand());
-
-				break;
-		}		
+		GuiLogger.info(e.getActionCommand());
+		GuiLogger.info(command);
+		
 	}
 
 	private class BunchOfButtons {
@@ -135,13 +126,6 @@ public class AccountingPanel extends JPanel implements ActionListener{
 		}
 	}
 
-	public static AccountingPanel getInstance() {
-		if (instance == null) {
-            instance = new AccountingPanel();
-        }
-        return instance;
-	}
-
 	public String getCurrentAccounting() {
 		return currentAccounting;
 	}
@@ -160,6 +144,7 @@ public class AccountingPanel extends JPanel implements ActionListener{
 				northPanel.add(del);
 				rButton.setSelected(true);
 				currentAccounting = rButton.getActionCommand();
+				CurrentAccountingHolder.setCurrentAccounting(currentAccounting);
 				northPanel.revalidate();
 				northPanel.repaint();				
 	}

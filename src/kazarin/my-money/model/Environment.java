@@ -53,10 +53,12 @@ public final class Environment {
 
         directory = System.getProperty("user.home") + "/mymoney";
         this.propertyDir = Paths.get(directory);
-        this.propertyFile = Paths.get(directory + "/mymoney.properties");
+        this.propertyFile = Paths.get(directory + "/accountings.properties");
         ModelLogger.info("directory = " + directory + "\n\t" + "propertyFile = " + this.propertyFile);
         accountings = new ArrayList<Operations>();
+        properties = new Properties();
         if (!Files.exists(propertyFile)) {
+            /*
             if (!Files.exists(this.propertyDir)) {
                 createDirectories();
             }            
@@ -68,9 +70,11 @@ public final class Environment {
             } catch (IOException e) {
                     ModelLogger.warning("Failed to store properties file.");
             }
+            */
+            ModelLogger.warning("Property File doesn't exist.");
+            throw new ModelException("Property File doesn't exist.");            
         } else {
-            try {
-                properties = new Properties();
+            try {                
                 properties.load(new FileReader(propertyFile.toString()));
                 String accountingsList = properties.getProperty("dbNames");
                     ModelLogger.info("accountingsList: " + accountingsList);
@@ -133,6 +137,10 @@ public final class Environment {
 
     public void createNewAccounting(String user, String password, String host,
                                 String dbName, String db) throws ModelException {
+        if (!Files.exists(propertyDir)) {
+            createDirectories();
+        }
+        createProperiesFile(propertyFile);
         Properties pr = createProperiesDB(user, password, host, dbName, db);
         addNewDbToProperties(dbName);
         try {
@@ -172,33 +180,33 @@ public final class Environment {
     private Properties createProperiesDB(String user, String password,
                                     String host, String dbName, String db) {
         ModelLogger.info("createProperiesDB");
-            Path pathToFile = Paths.get(directory + "/" + dbName + ".properties");
-            createProperiesFile(pathToFile);
-            Properties newProps = new Properties();
-                newProps.setProperty("user", user);
-                newProps.setProperty("password", password);
-                newProps.setProperty("dbName", dbName);
-                if (db.equals("MySQL")){
-                    newProps.setProperty("DB type", "MySQL");
-                    newProps.setProperty("driver", "com.mysql.jdbc.Driver");
-                    newProps.setProperty("url", "jdbc:mysql:" + "//" + host
-                                                                + "/" + dbName);
-                } else if (db.equals("HSQL")) {
-                    newProps.setProperty("DB type", "HSQL");
-                    newProps.setProperty("driver", "org.hsqldb.jdbc.JDBCDriver");
-                    newProps.setProperty("url", "jdbc:mysql:" + "//" + host
-                                                                + "/" + dbName);            
-                } else {
-                    ModelLogger.info("createProperiesDB: unknown DB");
-                }
-            
-            try {
-                newProps.store(new FileWriter(pathToFile.toString()), "comment");
-            }  catch (IOException e) {
-                ModelLogger.warning("createProperiesDB: "
-                                            + "failed to stote properties file.");
-            } 
-            return newProps;
+        Path pathToFile = Paths.get(directory + "/" + dbName + ".properties");
+        createProperiesFile(pathToFile);
+        Properties newProps = new Properties();
+            newProps.setProperty("user", user);
+            newProps.setProperty("password", password);
+            newProps.setProperty("dbName", dbName);
+            if (db.equals("MySQL")){
+                newProps.setProperty("DB type", "MySQL");
+                newProps.setProperty("driver", "com.mysql.jdbc.Driver");
+                newProps.setProperty("url", "jdbc:mysql:" + "//" + host
+                                                            + "/" + dbName);
+            } else if (db.equals("HSQL")) {
+                newProps.setProperty("DB type", "HSQL");
+                newProps.setProperty("driver", "org.hsqldb.jdbc.JDBCDriver");
+                newProps.setProperty("url", "jdbc:mysql:" + "//" + host
+                                                            + "/" + dbName);            
+            } else {
+                ModelLogger.info("createProperiesDB: unknown DB");
+            }
+        
+        try {
+            newProps.store(new FileWriter(pathToFile.toString()), "comment");
+        }  catch (IOException e) {
+            ModelLogger.warning("createProperiesDB: "
+                                        + "failed to stote properties file.");
+        } 
+        return newProps;
     }
     public List<Operations> getAccountings() {
         return accountings;

@@ -17,7 +17,7 @@ public class NewAccountingDialog extends JDialog {
 		private JTextField textFieldDBName;
 		private JTextField textFieldDB;
 	public NewAccountingDialog() {
-		super(MainScreen.frame, "Enter information:", true);
+		super(FrameHolder.getFrame(), "Enter information:", true);
 		setLayout(new GridLayout(6, 2));
 		setLocation(300, 350);
 		

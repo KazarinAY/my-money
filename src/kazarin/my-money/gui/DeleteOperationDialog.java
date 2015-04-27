@@ -6,7 +6,7 @@ package kazarin.my_money.gui;
 import kazarin.my_money.model.Operations;
 import kazarin.my_money.model.Operation;
 import kazarin.my_money.model.Environment;
-import kazarin.my_money.model.WrongCommandException;
+import kazarin.my_money.model.ModelException;
 
 import javax.swing.JFrame;
 import java.awt.event.ActionEvent;
@@ -42,7 +42,7 @@ public class DeleteOperationDialog {
  	 * Shows delete operation dialog window
  	 */
 	public void show(){
-		dialog = new JDialog(MainScreen.frame, "Delete operation:", true);
+		dialog = new JDialog(FrameHolder.getFrame(), "Delete operation:", true);
 		dialog.setLayout(new GridLayout(5, 2));
 		dialog.setLocation(300, 350);
 		
@@ -78,18 +78,18 @@ public class DeleteOperationDialog {
 						String command = String.format("delete %d",
 															operation.getId());
 
-//LOG						System.out.println("Command: " + command);
-						
+						GuiLogger.info("Command: " + command);
+						/*
 						Environment env = Environment.getInstance();
 						AccountingPanel ap = AccountingPanel.getInstance();
 						Operations operations = env.getOperationsByName(ap.getCurrentAccounting());
 						try {
 							operations.delete(command);
-						} catch (WrongCommandException wce) {
+						} catch (ModelException wce) {
 							System.err.println("ERROR: failed to delete!");
 							break;
 						}
-										
+						*/				
 						dialog.dispose();
 						break;
 					case "Cancel":

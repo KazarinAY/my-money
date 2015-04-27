@@ -2,7 +2,7 @@ package kazarin.my_money.gui;
 
 import kazarin.my_money.model.Operations;
 import kazarin.my_money.model.Environment;
-import kazarin.my_money.model.WrongCommandException;
+import kazarin.my_money.model.ModelException;
 
 import javax.swing.JFrame;
 import java.awt.event.ActionEvent;
@@ -41,7 +41,7 @@ public class AddOperationDialog {
  	 * Shows add operation dialog window
  	 */
 	public void show(){
-		dialog = new JDialog(MainScreen.frame, "Add operation:", true);
+		dialog = new JDialog(FrameHolder.getFrame(), "Add operation:", true);
 	
 		dialog.setLayout(new GridLayout(5, 2));
 		dialog.setLocation(300, 350);
@@ -94,17 +94,23 @@ public class AddOperationDialog {
 						
 						String command = String.format("add %s:%s:%s#%s",
 												howMuch, date, description,tags);
-						Environment env = Environment.getInstance();
-						AccountingPanel ap = AccountingPanel.getInstance();
-						Operations operations = env.getOperationsByName(ap.getCurrentAccounting());
+						GuiLogger.info(command);
+						/*						
+						try {
+							Environment env = Environment.getInstance();							
+						} catch (ModelException me) {
+							GuiLogger.warning("Environment.getInstance()");
+						}
+						Operations operations = env.getOperationsByName(
+								CurrentAccountingHolder.getCurrentAccounting());
 						
 						try {
 							operations.add(command);
-						} catch (WrongCommandException wce) {
-							textFieldHowMuch.setText("Wrong command!");
+						} catch (ModelException me) {
+							textFieldHowMuch.setText(me.getMessage());
 							break;
 						}
-						
+						*/
 						dialog.dispose();
 						
 						break;

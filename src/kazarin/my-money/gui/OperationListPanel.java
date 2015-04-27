@@ -3,6 +3,7 @@ package kazarin.my_money.gui;
 import kazarin.my_money.model.Operations;
 import kazarin.my_money.model.Operation;
 import kazarin.my_money.model.Environment;
+import kazarin.my_money.model.ModelException;
 
 import javax.swing.JPanel;
 import java.awt.event.ActionListener; 
@@ -39,16 +40,25 @@ public class OperationListPanel extends JPanel implements ActionListener{
 	 */
 	private OperationListPanel() {
 		super();
-		Environment env = Environment.getInstance();
-		if (env.isReady()){
-			AccountingPanel ap = AccountingPanel.getInstance();		
-			String dbName = ap.getCurrentAccounting();
-			operations = env.getOperationsByName(dbName);
-			dataList = operations.getList();
-		} else {
-			dataList = new ArrayList<Operation>();
-		}		
-		
+		Environment env;
+		try {
+			env = Environment.getInstance();		
+
+			if (env.isReady()){
+				GuiLogger.info("env.isReady() = true");
+			/*
+				AccountingPanel ap = AccountingPanel.getInstance();		
+				String dbName = ap.getCurrentAccounting();
+				operations = env.getOperationsByName(dbName);
+				dataList = operations.getList();
+				*/
+			} else {
+				GuiLogger.info("env.isReady() = false");
+				dataList = new ArrayList<Operation>();
+			}	
+		} catch (ModelException me) {
+			GuiLogger.warning("Environment.getInstance()");
+		}
 		setLayout(new BorderLayout());
 		
 		table = new JTable();
@@ -59,7 +69,7 @@ public class OperationListPanel extends JPanel implements ActionListener{
 								            "Date",
 								            "Description",
 								            "Tags",
-								            "Id"
+								            "Id"								            
 								            };		
 			
 			
@@ -97,7 +107,11 @@ public class OperationListPanel extends JPanel implements ActionListener{
 			public String getColumnName(int column) {return columnNames[column];}
 			
 			@Override
-			public boolean isCellEditable(int row, int col) {return false;}
+			public boolean isCellEditable(int row, int col) {
+				if (col > 3) return false;
+
+				return true;
+			}
 			
 			@Override
 			public void setValueAt(Object aValue, int row, int col) {
@@ -138,8 +152,8 @@ public class OperationListPanel extends JPanel implements ActionListener{
 			public Class getColumnClass(int c) {
 				return getValueAt(0, c).getClass();
 			}			
-		}; //TableModel tableModel = new AbstractTableModel() {
-
+		}; 
+		
 		table.setModel(tableModel);
 
 		table.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
@@ -182,7 +196,12 @@ public class OperationListPanel extends JPanel implements ActionListener{
 	@Override
 	public void actionPerformed(ActionEvent e) {
 		int selectedRow;
-		Environment env = Environment.getInstance();
+		Environment env;
+		try {
+			env = Environment.getInstance();
+		} catch (ModelException me) {
+			GuiLogger.warning("Environment.getInstance()");
+		}		
 		
 		switch(e.getActionCommand()) {
 			
@@ -241,9 +260,12 @@ public class OperationListPanel extends JPanel implements ActionListener{
 	}
 
 	public void refreshDataList() {
+		GuiLogger.info("refreshDataList");
+		/*
 		AccountingPanel ap = AccountingPanel.getInstance();
 		operations = new Operations(ap.getCurrentAccounting());
 		dataList = operations.getList();
+		*/
 		table.repaint();
 	}
 }
