@@ -12,10 +12,17 @@ import javax.swing.JLabel;
 import java.awt.GridLayout;
 import javax.swing.JComboBox;
 
-public class NewAccountingDialog extends JDialog {
-		
-		private String[] result;
+public class AccountingDialog extends JDialog {
 
+		private static final String HOME_PATH;
+		static {
+			HOME_PATH = System.getProperty("user.home");
+		}
+		private static final String LOCALHOST = "localhost";
+
+		private String[] result;
+		private boolean isNew;
+		private String[] dbStrings;
 		private JTextField textFieldUser;
 		private JTextField textFieldPassword;
 		private JTextField textFieldHost;
@@ -23,44 +30,57 @@ public class NewAccountingDialog extends JDialog {
 		private JTextField textFieldDB;
 		private JComboBox<String> dbList;
 	
-	public NewAccountingDialog() {
+	public AccountingDialog(boolean isNew) {
 		super(FrameHolder.getFrame(), "Enter information:", true);
+
+		this.isNew =isNew;
 
 		setLayout(new GridLayout(6, 2));
 		setLocation(300, 350);
 		
-		JLabel labelUser = new JLabel("User:");
-		add(labelUser);
-		
+		JLabel labelUser = new JLabel("User:");			
 		textFieldUser = new JTextField(20);
-		textFieldUser.setText(System.getProperty("user.name"));
-		add(textFieldUser);
-		
-		JLabel labelPassword = new JLabel("Password:");
-		add(labelPassword);
-		
-		textFieldPassword = new JTextField(20);
-		add(textFieldPassword);
-
-		JLabel labelHost = new JLabel("Host:");
-		add(labelHost);
-		
+		textFieldUser.setText(System.getProperty("user.name"));		
+		JLabel labelPassword = new JLabel("Password:");		
+		textFieldPassword = new JTextField(20);		
+		JLabel labelHost = new JLabel("Host:");		
 		textFieldHost = new JTextField(20);
-		textFieldHost.setText("localhost");
-		add(textFieldHost);
-
 		JLabel labelDBName = new JLabel("DB name:");
-		add(labelDBName);
-		
 		textFieldDBName = new JTextField(20);
-		add(textFieldDBName);
+		JLabel labelDB = new JLabel("DB (HSQL only):");		
 		
-		JLabel labelDB = new JLabel("DB (HSQL only):");
-		add(labelDB);
-		String[] dbStrings = {"HSQL"};
+		if (isNew) {
+			textFieldHost.setText(HOME_PATH);			
+			dbStrings = new String[]{"HSQL"};
+		} else {
+			textFieldHost.setText(LOCALHOST);
+			dbStrings = new String[]{"MySQL", "HSQL"};
+		}
 		dbList = new JComboBox<String>(dbStrings);
 		dbList.setSelectedIndex(0);
 		dbList.setEditable(false);
+		dbList.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				JComboBox cb = (JComboBox)e.getSource();
+        		String textInField = (String) cb.getSelectedItem();
+        		if (textInField.equals("MySQL")) {
+        			textFieldHost.setText(LOCALHOST);
+        		} else if (textInField.equals("HSQL")) {
+        			textFieldHost.setText(HOME_PATH);
+        		}
+			}
+		});
+		
+		add(labelUser);
+		add(textFieldUser);
+		add(labelPassword);
+		add(textFieldPassword);
+		add(labelHost);
+		add(textFieldHost);
+		add(labelDBName);
+		add(textFieldDBName);
+		add(labelDB);
 		add(dbList);
 		/*
 		textFieldDB = new JTextField(20);
@@ -79,22 +99,14 @@ public class NewAccountingDialog extends JDialog {
 						if (host.equals("")) break;
 						String dbName = textFieldDBName.getText();
 						if (dbName.equals("")) break;
-						String db = (String) dbList.getSelectedItem();
-						if (db.equals("")) break;
-						result = new String[2];
-						result[0] = dbName;
-						
-						try {
-							Environment env = Environment.getInstance();
-							env.createNewAccounting(user, password,
-															host, dbName, db);							
-							result[1] = "OK";						
-						} catch (ModelException me) {
-							String message = me.getMessage();
-							GuiLogger.warning("env.createNewAccounting\n" + message);
-							result[1] = message;
-						}
-
+						String dbType = (String) dbList.getSelectedItem();
+						if (dbType.equals("")) break;
+						result = new String[5];
+						result[0] = user;
+						result[1] = password;
+						result[2] = host;
+						result[3] = dbName;
+						result[4] = dbType;
 						dispose();
 						break;
 					

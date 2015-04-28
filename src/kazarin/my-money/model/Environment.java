@@ -194,7 +194,7 @@ public final class Environment {
             } else if (db.equals("HSQL")) {
                 newProps.setProperty("DB type", "HSQL");
                 newProps.setProperty("driver", "org.hsqldb.jdbc.JDBCDriver");
-                newProps.setProperty("url", "jdbc:hsqldb:" + ":" + host
+                newProps.setProperty("url", "jdbc:hsqldb:" + host               //TODO if host == file...
                                                             + "/" + dbName);            
             } else {
                 ModelLogger.info("createProperiesDB: unknown DB");

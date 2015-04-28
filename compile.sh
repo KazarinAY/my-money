@@ -16,5 +16,5 @@ javac -d ../../classes/ -cp ../../classes kazarin/my-money/model/Operations.java
 javac -d ../../classes/ -cp ../../classes kazarin/my-money/model/Environment.java
 javac -d ../../classes/ -cp ../../classes kazarin/my-money/gui/GuiLogger.java
 javac -d ../../classes/ -cp ../../classes kazarin/my-money/gui/FrameHolder.java
-javac -d ../../classes/ -cp ../../classes kazarin/my-money/gui/NewAccountingDialog.java
+javac -d ../../classes/ -cp ../../classes kazarin/my-money/gui/AccountingDialog.java
 javac -d ../../classes/ -cp ../../classes kazarin/my-money/gui/MainScreen.java

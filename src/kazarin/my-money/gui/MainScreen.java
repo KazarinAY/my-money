@@ -18,6 +18,7 @@ import javax.swing.ButtonGroup;
 import javax.swing.JButton;
 import javax.swing.JTextArea;
 import javax.swing.JOptionPane;
+import javax.swing.JLabel;
 
 import java.awt.BorderLayout;
 import java.awt.GridLayout;
@@ -42,6 +43,9 @@ import java.math.BigDecimal;
 public class MainScreen extends JPanel{
 	private static final String CONNECT_TO_EXISTING = "Connect to existing";
 	private static final String NEW_ACCOUNTING = "New accounting";
+	private static final int MAX_ACCAUNTINGS_NUMBET = 5;
+	private static final boolean NEW = true;
+	private static final boolean CONNECT = false;
 
 	private Environment env;
 	private Operations operations;
@@ -76,39 +80,75 @@ public class MainScreen extends JPanel{
 	 * Constructs a MainScreen and displays it.
 	 */
 	private MainScreen(final JFrame frame){
-		super(new BorderLayout());		
+		super(new BorderLayout());
 		
 		actionListener = new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				String command = e.getActionCommand();
-				
+				String command = e.getActionCommand();	
+				String[] result;			
 				switch (command) {
 					case CONNECT_TO_EXISTING:
-						GuiLogger.info("ACTION: " + command);
-						break;
-					case NEW_ACCOUNTING:
-						if (accList.size() > 5) {
+						if (accList.size() >= MAX_ACCAUNTINGS_NUMBET) {
 							JOptionPane.showMessageDialog(frame,
                                     "Alredy to mutch accountings.",
                                     "Warning",
                                     JOptionPane.WARNING_MESSAGE);
+									break;
 						}
-						NewAccountingDialog dialog = new NewAccountingDialog();
-						String[] result = dialog.getResultDbName();
+						AccountingDialog connectDialog = new AccountingDialog(CONNECT);
+						result = connectDialog.getResultDbName();
 						if (result == null) break; //if Canceled
-						if (!result[1].equals("OK")) {
-							textArea.append("\n" + result[1]);
+						GuiLogger.info("resultDbName: " + result[3]);
+						if (isAlredyExists(result[3])) {							
+							textArea.append("\n" + "such accounting alredy exists");
 							break;
 						}
-						GuiLogger.info("resultDbName: " + result[0]);
-						if (!isAlredyExists(result[0])) {
-							addNewJRButton(result[0]);
-							textArea.append("\n" + result[1]);
-						} else {
-							textArea.append("\n" + "such accounting alredy exists");
+						try {
+							//Environment env = Environment.getInstance();
+							env.connectToExistingAccounting(result[0], result[1],				//(user, password,
+													result[2], result[3], result[4]);	//host, dbName, dbType);						
+							textArea.append("\n" + "Connected to accounting.");
+						} catch (ModelException me) {
+							String message = me.getMessage();
+							GuiLogger.warning("env.connectToExistingAccounting\n" + message);
+							textArea.append("\n" + message);
 						}
-				
+						addNewJRButton(result[3]);
+						operations = env.getOperationsByName(currentAccounting);
+						opList = operations.getList();
+						revalidate();
+						repaint();
+						break;
+					case NEW_ACCOUNTING:						
+						if (accList.size() >= MAX_ACCAUNTINGS_NUMBET) {
+							JOptionPane.showMessageDialog(frame,
+                                    "Alredy to mutch accountings.",
+                                    "Warning",
+                                    JOptionPane.WARNING_MESSAGE);
+									break;
+						}
+						AccountingDialog newDialog = new AccountingDialog(NEW);
+						result = newDialog.getResultDbName();
+						if (result == null) break; //if Canceled
+						GuiLogger.info("resultDbName: " + result[3]);
+						if (isAlredyExists(result[3])) {							
+							textArea.append("\n" + "such accounting alredy exists");
+							break;
+						}
+						try {
+							//Environment env = Environment.getInstance();
+							env.createNewAccounting(result[0], result[1],				//(user, password,
+													result[2], result[3], result[4]);	//host, dbName, dbType);						
+							textArea.append("\n" + "New accounting created.");
+						} catch (ModelException me) {
+							String message = me.getMessage();
+							GuiLogger.warning("env.createNewAccounting\n" + message);
+							textArea.append("\n" + message);
+						}
+						addNewJRButton(result[3]);
+						revalidate();
+						repaint();
 						break;
 					default:
 						GuiLogger.info("ACTION: " + command);
@@ -154,6 +194,12 @@ public class MainScreen extends JPanel{
 		newEntry.addActionListener(actionListener);
 		eastPanel.add(newEntry);
 		radioButtonsPanel = new JPanel(new GridLayout(0, 3));
+		JLabel label1 = new JLabel("Accountings:");
+		JLabel label2 = new JLabel("");
+		JLabel label3 = new JLabel("");
+		radioButtonsPanel.add(label1);
+		radioButtonsPanel.add(label2);
+		radioButtonsPanel.add(label3);
 		for (BunchOfButtons btn : bunchOfButtons) {
 			radioButtonsPanel.add(btn.getJRButton());
 			radioButtonsPanel.add(btn.getEdit());
@@ -335,7 +381,7 @@ public class MainScreen extends JPanel{
         frame.pack();
         frame.setVisible(true);
     }
-    public void addNewJRButton(String dbName) {
+    private void addNewJRButton(String dbName) {
     			try {
 					Operations newOps = new Operations(dbName);
 					accList.add(newOps);
@@ -354,12 +400,10 @@ public class MainScreen extends JPanel{
 					currentAccounting = rButton.getActionCommand();					
 				} catch (ModelException me) {
 					textArea.append("\n" + me.getMessage());
-				}							
-				revalidate();
-				repaint();				
+				}
 	}
 
-	public boolean isAlredyExists(String newAcc) {
+	private boolean isAlredyExists(String newAcc) {
 		for (Operations ops : accList) {
 			if (ops.getName().equals(newAcc))
 				return true;
