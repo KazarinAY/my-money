@@ -21,8 +21,9 @@ import java.util.Date;
  */
 public class AddOperationDialog {
 
+	private String[] result;
 	private JDialog dialog;
-	private JTextField textFieldHowMuch;
+	private JTextField textFieldSum;
 	private JTextField textFieldDate;
 	private JTextField textFieldDescription;
 	private JTextField textFieldTags;
@@ -46,13 +47,13 @@ public class AddOperationDialog {
 		dialog.setLayout(new GridLayout(5, 2));
 		dialog.setLocation(300, 350);
 		
-		JLabel labelHowMuch = new JLabel("Sum:");
-		dialog.add(labelHowMuch);
+		JLabel labelSum = new JLabel("Sum:");
+		dialog.add(labelSum);
 		
-		textFieldHowMuch = new JTextField(20);
-		dialog.add(textFieldHowMuch);
+		textFieldSum = new JTextField(20);
+		dialog.add(textFieldSum);
 		
-		JLabel labelDate = new JLabel("Date:");
+		JLabel labelDate = new JLabel("Date(dd-mm-yyyy):");
 		dialog.add(labelDate);
 		
 		textFieldDate = new JTextField(20);
@@ -75,44 +76,28 @@ public class AddOperationDialog {
 			public void actionPerformed(ActionEvent e) {
 				switch (e.getActionCommand()){
 					case "OK": 
-						String howMuch = textFieldHowMuch.getText();
-						if (!howMuch.trim().matches("[+-]?(?:\\d+(?:\\.\\d+)?|\\.\\d+)")) {
-							textFieldHowMuch.setText("Wrong number!");
+						String sum = textFieldSum.getText().trim();
+						if (!sum.trim().matches("[+-]?(?:\\d+(?:\\.\\d+)?|\\.\\d+)")) {
+							textFieldSum.setText("Wrong number!");
 							break;
 						}
-						String date = textFieldDate.getText();
+						String date = textFieldDate.getText().trim();
 						if(date.equals("")){
 							textFieldDate.setText("Enter the date name!");
 							break;
 						}
-						if (!date.trim().matches("\\d{2}-\\d{2}-\\d{4}")) {
-							textFieldHowMuch.setText("Wrong date!");
+						if (!date.matches("\\d{2}-\\d{2}-\\d{4}")) {
+							textFieldSum.setText("Wrong date!");
 							break;
 						}
-						String description = textFieldDescription.getText();
-						String tags = textFieldTags.getText();
-						
-						String command = String.format("add %s:%s:%s#%s",
-												howMuch, date, description,tags);
-						GuiLogger.info(command);
-						/*						
-						try {
-							Environment env = Environment.getInstance();							
-						} catch (ModelException me) {
-							GuiLogger.warning("Environment.getInstance()");
-						}
-						Operations operations = env.getOperationsByName(
-								CurrentAccountingHolder.getCurrentAccounting());
-						
-						try {
-							operations.add(command);
-						} catch (ModelException me) {
-							textFieldHowMuch.setText(me.getMessage());
-							break;
-						}
-						*/
-						dialog.dispose();
-						
+						String description = textFieldDescription.getText().trim();
+						String tags = textFieldTags.getText().trim();
+						result = new String[4];
+						result[0] = sum;
+						result[1] = date;
+						result[2] = description;
+						result[3] = tags;
+						dialog.dispose();						
 						break;
 					case "Cancel":
 						dialog.dispose();
@@ -131,6 +116,9 @@ public class AddOperationDialog {
 		
 		dialog.pack();
 		dialog.setVisible(true);	
-	}	
-	
+	}
+
+	public String[] getResultDbName() {
+		return result;
+	}
 }

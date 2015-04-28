@@ -59,12 +59,7 @@ public class Operation {
         this.date = date;
         if (description == null) this.description = "";
         else this.description = description;
-        this.tags = new HashSet<>();
-        if (tags != null) {
-            for (String tag : tags) {
-                this.tags.add(tag);
-            }
-        }
+        setTags(tags);       
         ModelLogger.info("new Operation Constructed");
         ModelLogger.info(toString());
     }
@@ -80,6 +75,29 @@ public class Operation {
     public Operation(final int id, final BigDecimal sum,
                      final String description, final String... tags) {
         this(id, sum, new Date(), description, tags);
+    }
+
+    /**
+     * Constructor.
+     * @param sumStr       how much money spent or received
+     * @param dateStr          when was the operation
+     * @param description   description of operation
+     * @param tagsStr         tags
+     */
+    public Operation(final String sumStr, final String dateStr,
+                     final String description, final String tagsStr) 
+                                            throws ModelException {
+       
+        try {
+            sum = new BigDecimal(sumStr);
+            date = dateFormat.parse(dateStr); 
+        } catch (ParseException pe) {
+            throw new ModelException("parseDate ParseException");
+        } catch (NumberFormatException nfe) {
+            throw new ModelException("new BigDecimal(sumStr)");
+        }
+        this.description = description;
+        setTags(tagsStr.split(","));        
     }
 
     /**

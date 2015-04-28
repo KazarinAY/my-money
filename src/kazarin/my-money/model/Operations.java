@@ -115,13 +115,23 @@ public final class Operations {
         System.out.println("Balance = " + balance + ", total operations = "
                                         + list.size());
     }
-
-    /**
+    
+    /**     
      * Adds an operation to the operations list.
      * @param line      command line
      * @throws ModelException if bad command line
      */
-    public void add(String line) throws ModelException {        
+public void add(Operation operation) throws ModelException { 
+    dao.add(operation);
+    setList(dao.getAll());
+}    
+    /**
+     * @deprecated      Use public void add(Operation operation) ...
+     * Adds an operation to the operations list.
+     * @param line      command line
+     * @throws ModelException if bad command line
+     */
+@Deprecated  public void add(String line) throws ModelException {        
         ModelLogger.info("ADD: Line: " + line);
         if (line == null || line.equals("")) 
             throw new ModelException("line == null || line.equals(\"\")");

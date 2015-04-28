@@ -46,11 +46,14 @@ public class MainScreen extends JPanel{
 	private static final int MAX_ACCAUNTINGS_NUMBET = 5;
 	private static final boolean NEW = true;
 	private static final boolean CONNECT = false;
+	private static final String NEW_ENTRY = "New entry";
 
 	private Environment env;
 	private Operations operations;
 	private List<Operations> accList;
 	private List<Operation> opList;
+	private String currentAccounting;
+	String[] result;
 
 	private JFrame frame;
 	private ActionListener actionListener;	
@@ -60,8 +63,7 @@ public class MainScreen extends JPanel{
 	private JScrollPane scrollPane;
 	//EAST
 	private JButton newEntry;
-	private List<BunchOfButtons> bunchOfButtons;
-	private String currentAccounting;
+	private List<BunchOfButtons> bunchOfButtons;	
 	private ButtonGroup buttonGroup;	
 	private JPanel eastPanel;
 	private JPanel radioButtonsPanel;
@@ -85,8 +87,7 @@ public class MainScreen extends JPanel{
 		actionListener = new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				String command = e.getActionCommand();	
-				String[] result;			
+				String command = e.getActionCommand();							
 				switch (command) {
 					case CONNECT_TO_EXISTING:
 						if (accList.size() >= MAX_ACCAUNTINGS_NUMBET) {
@@ -136,8 +137,7 @@ public class MainScreen extends JPanel{
 							textArea.append("\n" + "such accounting alredy exists");
 							break;
 						}
-						try {
-							//Environment env = Environment.getInstance();
+						try {							
 							env.createNewAccounting(result[0], result[1],				//(user, password,
 													result[2], result[3], result[4]);	//host, dbName, dbType);						
 							textArea.append("\n" + "New accounting created.");
@@ -150,10 +150,29 @@ public class MainScreen extends JPanel{
 						revalidate();
 						repaint();
 						break;
+
+					case NEW_ENTRY:
+						AddOperationDialog addOperationDialog = new AddOperationDialog(tableModel);
+						addOperationDialog.show();						
+						result = addOperationDialog.getResultDbName();
+						if (result == null) break; //if Canceled
+						Operations operations = env.getOperationsByName(currentAccounting);
+						try {
+							Operation addedOperation = new Operation(result[0], result[1], result[2], result[3]);
+							operations.add(addedOperation);
+						} catch (ModelException me) {
+							String message = me.getMessage();
+							GuiLogger.warning("operations.add(command)\n" + message);
+							textArea.append("\n" + message);
+							break;
+						}
+						opList = operations.getList();
+						revalidate();
+						repaint();						
+						break;
 					default:
 						GuiLogger.info("ACTION: " + command);
 						break;
-
 				}
 			}
 		};
@@ -190,7 +209,7 @@ public class MainScreen extends JPanel{
 
 		}
 		eastPanel = new JPanel(new GridLayout(3, 0));
-		newEntry = new JButton("New Entry");
+		newEntry = new JButton(NEW_ENTRY);
 		newEntry.addActionListener(actionListener);
 		eastPanel.add(newEntry);
 		radioButtonsPanel = new JPanel(new GridLayout(0, 3));
