@@ -1,7 +1,7 @@
 package kazarin.my_money.gui;
 
-import kazarin.my_money.model.Operation;
-import kazarin.my_money.model.Operations;
+import kazarin.my_money.model.Entry;
+import kazarin.my_money.model.Accounting;
 import kazarin.my_money.model.Environment;
 import kazarin.my_money.model.ModelException;
 
@@ -49,9 +49,9 @@ public class MainScreen extends JPanel{
 	private static final String NEW_ENTRY = "New entry";
 
 	private Environment env;
-	private Operations operations;
-	private List<Operations> accList;
-	private List<Operation> opList;
+	private Accounting accounting;
+	private List<Accounting> accList;
+	private List<Entry> opList;
 	private String currentAccounting;
 	String[] result;
 
@@ -97,8 +97,8 @@ public class MainScreen extends JPanel{
                                     JOptionPane.WARNING_MESSAGE);
 									break;
 						}
-						AccountingDialog connectDialog = new AccountingDialog(CONNECT);
-						result = connectDialog.getResultDbName();
+						//AccountingDialog connectDialog = new AccountingDialog(CONNECT);
+						//result = connectDialog.getResultDbName();
 						if (result == null) break; //if Canceled
 						GuiLogger.info("resultDbName: " + result[3]);
 						if (isAlredyExists(result[3])) {							
@@ -106,7 +106,6 @@ public class MainScreen extends JPanel{
 							break;
 						}
 						try {
-							//Environment env = Environment.getInstance();
 							env.connectToExistingAccounting(result[0], result[1],				//(user, password,
 													result[2], result[3], result[4]);	//host, dbName, dbType);						
 							textArea.append("\n" + "Connected to accounting.");
@@ -116,8 +115,8 @@ public class MainScreen extends JPanel{
 							textArea.append("\n" + message);
 						}
 						addNewJRButton(result[3]);
-						operations = env.getOperationsByName(currentAccounting);
-						opList = operations.getList();
+						accounting = env.getOperationsByName(currentAccounting);
+						opList = accounting.getList();
 						revalidate();
 						repaint();
 						break;
@@ -129,8 +128,8 @@ public class MainScreen extends JPanel{
                                     JOptionPane.WARNING_MESSAGE);
 									break;
 						}
-						AccountingDialog newDialog = new AccountingDialog(NEW);
-						result = newDialog.getResultDbName();
+						//AccountingDialog newDialog = new AccountingDialog(NEW);
+						//result = newDialog.getResultDbName();
 						if (result == null) break; //if Canceled
 						GuiLogger.info("resultDbName: " + result[3]);
 						if (isAlredyExists(result[3])) {							
@@ -152,21 +151,21 @@ public class MainScreen extends JPanel{
 						break;
 
 					case NEW_ENTRY:
-						AddOperationDialog addOperationDialog = new AddOperationDialog(tableModel);
-						addOperationDialog.show();						
-						result = addOperationDialog.getResultDbName();
+						//AddOperationDialog addOperationDialog = new AddOperationDialog(tableModel);
+						//addOperationDialog.show();						
+						//result = addOperationDialog.getResultDbName();
 						if (result == null) break; //if Canceled
-						Operations operations = env.getOperationsByName(currentAccounting);
+						Accounting accounting = env.getOperationsByName(currentAccounting);
 						try {
-							Operation addedOperation = new Operation(result[0], result[1], result[2], result[3]);
-							operations.add(addedOperation);
+							Entry addedOperation = new Entry(result[0], result[1], result[2], result[3]);
+							accounting.add(addedOperation);
 						} catch (ModelException me) {
 							String message = me.getMessage();
-							GuiLogger.warning("operations.add(command)\n" + message);
+							GuiLogger.warning("accounting.add(command)\n" + message);
 							textArea.append("\n" + message);
 							break;
 						}
-						opList = operations.getList();
+						opList = accounting.getList();
 						revalidate();
 						repaint();						
 						break;
@@ -176,8 +175,8 @@ public class MainScreen extends JPanel{
 				}
 			}
 		};
-		accList = new ArrayList<Operations>(); // = env.getAccountings();
-		opList = new ArrayList<Operation>(); 
+		accList = new ArrayList<Accounting>(); // = env.getAccountings();
+		opList = new ArrayList<Entry>(); 
 		try {
 			env = Environment.getInstance();
 			accList = env.getAccountings();
@@ -188,7 +187,7 @@ public class MainScreen extends JPanel{
 		bunchOfButtons = new ArrayList<BunchOfButtons>();
 		buttonGroup = new ButtonGroup();
 		if (accList.size() > 0) {
-			for (Operations acc : accList) {			
+			for (Accounting acc : accList) {			
 				JRadioButton rButton = new JRadioButton(acc.getName());
 				rButton.addActionListener(actionListener);
 				JButton edit = new JButton("edit");
@@ -204,8 +203,8 @@ public class MainScreen extends JPanel{
 				buttonGroup.add(btn.getJRButton());
 			}
 
-			operations = env.getOperationsByName(currentAccounting);
-			opList = operations.getList();
+			accounting = env.getOperationsByName(currentAccounting);
+			opList = accounting.getList();
 
 		}
 		eastPanel = new JPanel(new GridLayout(3, 0));
@@ -281,13 +280,13 @@ public class MainScreen extends JPanel{
 			
 			@Override
 			public Object getValueAt(int row, int col) {
-				Operation operation = opList.get(row);
+				Entry entry = opList.get(row);
 				switch(col){
-					case 0: return operation.getSum();
-					case 1: return operation.getDate();
-					case 2: return operation.getDescription();
-					case 3: return operation.getTagsStr();
-					case 4: return operation.getId();
+					case 0: return entry.getSum();
+					case 1: return entry.getDate();
+					case 2: return entry.getDescription();
+					case 3: return entry.getTagsStr();
+					case 4: return entry.getId();
 					default: return "";
 				}		
 			}
@@ -305,21 +304,21 @@ public class MainScreen extends JPanel{
 			@Override
 			public void setValueAt(Object aValue, int row, int col) {
 				if(opList.size() < row) { 								//add new row
-					Operation operation = new Operation();
-					operation.setSum((BigDecimal)aValue);
-					opList.add(operation);			
+					Entry entry = new Entry();
+					entry.setSum((BigDecimal)aValue);
+					opList.add(entry);			
 				} else {													//change row
-					Operation operation = opList.get(row);
+					Entry entry = opList.get(row);
 					switch(col){
-						case 0: operation.setSum((BigDecimal)aValue);
+						case 0: entry.setSum((BigDecimal)aValue);
 								break;
-						case 1: operation.setDate((Date)aValue);
+						case 1: entry.setDate((Date)aValue);
 								break;
-						case 2: operation.setDescription((String)aValue);
+						case 2: entry.setDescription((String)aValue);
 								break;
-						case 3: operation.setTags((String[])aValue);
+						case 3: entry.setTags((String[])aValue);
 								break;
-						case 4: operation.setId((Integer)aValue);
+						case 4: entry.setId((Integer)aValue);
 								break;
 					}
 		        	fireTableDataChanged();		
@@ -402,7 +401,7 @@ public class MainScreen extends JPanel{
     }
     private void addNewJRButton(String dbName) {
     			try {
-					Operations newOps = new Operations(dbName);
+					Accounting newOps = new Accounting(dbName);
 					accList.add(newOps);
 					JRadioButton rButton = new JRadioButton(dbName);
 					rButton.addActionListener(actionListener);
@@ -423,10 +422,17 @@ public class MainScreen extends JPanel{
 	}
 
 	private boolean isAlredyExists(String newAcc) {
-		for (Operations ops : accList) {
+		for (Accounting ops : accList) {
 			if (ops.getName().equals(newAcc))
 				return true;
 		}
+		return false;
+	}
+	/*
+	wtf is this?
+	*/
+	private boolean recalculateStatistic() {
+		//statTextArea
 		return false;
 	}
 

@@ -1,6 +1,6 @@
 package kazarin.my_money.db;
 
-import kazarin.my_money.model.Operation;
+import kazarin.my_money.model.Entry;
 
 import java.util.Properties;
 import java.sql.Connection;
@@ -13,8 +13,11 @@ import java.sql.Statement;
 import java.sql.ResultSet;
 import java.text.SimpleDateFormat;
 import java.util.Locale;
-
-public abstract class AbstractDao implements Dao<Operation> {
+/*
+ * Depends on:  model/Entry.java
+ * 				db/Dao.java
+ */
+public abstract class AbstractDao implements Dao<Entry> {
 
 	protected Properties propertiesDB;
 	protected Connection connection;
@@ -58,10 +61,10 @@ public abstract class AbstractDao implements Dao<Operation> {
 	}
 
 	@Override
-	public List<Operation> getAll(){
+	public List<Entry> getAll() throws DaoException {
 		String sql = "SELECT * FROM operations;";
 		DBLogger.info("SQL: " + sql);
-		List<Operation> list = new ArrayList<Operation>();
+		List<Entry> list = new ArrayList<Entry>();
 		ResultSet rs = null;
 		try{
 			connection = DriverManager.getConnection(url, propertiesDB);
@@ -72,16 +75,17 @@ public abstract class AbstractDao implements Dao<Operation> {
 			DBLogger.info("ResultSet... OK");
 			
 			while(rs.next()){
-				Operation operation = new Operation();
-				operation.setId(rs.getInt("op_id"));
-				operation.setSum(rs.getBigDecimal("op_sum"));
-				operation.setDate(rs.getDate("op_date"));
-				operation.setDescription(rs.getString("op_description"));
-				operation.setTags(rs.getString("op_tags").split(","));
-				list.add(operation);
+				Entry entry = new Entry();
+				entry.setId(rs.getInt("op_id"));
+				entry.setSum(rs.getBigDecimal("op_sum"));
+				entry.setDate(rs.getDate("op_date"));
+				entry.setDescription(rs.getString("op_description"));
+				entry.setTags(rs.getString("op_tags").split(","));
+				list.add(entry);
 			}
 		} catch(SQLException e){
 			DBLogger.warning("Failed to get all.", e);
+			throw new DaoException("Failed to get all.");
 		} finally {
 			if (connection != null) {
 				try {
@@ -95,15 +99,15 @@ public abstract class AbstractDao implements Dao<Operation> {
 		return list;
 	}
 
-	protected void add(Operation operation, String sqlFormat){
-		String howMuch = operation.getSum().toString();
+	protected void add(Entry entry, String sqlFormat) throws DaoException {
+		String sum = entry.getSum().toString();
 		SimpleDateFormat dateFormat =
                             new SimpleDateFormat("yyyy-MM-dd", Locale.ENGLISH);
-		String date = dateFormat.format(operation.getDate());
-		String description = operation.getDescription();
-		String tags = operation.getTagsStr();
+		String date = dateFormat.format(entry.getDate());
+		String description = entry.getDescription();
+		String tags = entry.getTagsStr();
 		String sql = String.format(	sqlFormat,
-									howMuch, date, description, tags);
+									sum, date, description, tags);
 		DBLogger.info("SQL: " + sql);
 		
 		try{
@@ -113,7 +117,8 @@ public abstract class AbstractDao implements Dao<Operation> {
 			stmt.executeUpdate(sql);			
 
 		} catch(SQLException e){
-			DBLogger.warning("RROR: Failed to add operation.", e);
+			DBLogger.warning("Failed to add entry.", e);
+			throw new DaoException("Failed to add entry.");
 		} finally {
 			if (connection != null) {
 				try {
@@ -125,17 +130,17 @@ public abstract class AbstractDao implements Dao<Operation> {
 		}
 	}
 
-	protected void update(Operation oldOperation, String sqlFormat){
-		String idStr = String.valueOf(oldOperation.getId());
-		String howMuch = oldOperation.getSum().toString();
+	protected void update(Entry oldEntry, String sqlFormat){
+		String idStr = String.valueOf(oldEntry.getId());
+		String sum = oldEntry.getSum().toString();
 		SimpleDateFormat dateFormat =
                             new SimpleDateFormat("yyyy-MM-dd", Locale.ENGLISH);
-		String date = dateFormat.format(oldOperation.getDate());
-		String description = oldOperation.getDescription();
-		String tags = oldOperation.getTagsStr();
+		String date = dateFormat.format(oldEntry.getDate());
+		String description = oldEntry.getDescription();
+		String tags = oldEntry.getTagsStr();
 		
 		String sql = String.format(sqlFormat, 
-									howMuch, date,
+									sum, date,
 									description, tags,
 									idStr);
 		
@@ -148,7 +153,7 @@ public abstract class AbstractDao implements Dao<Operation> {
 			stmt.executeUpdate(sql);
 
 		} catch(SQLException e){
-			DBLogger.warning("Failed to update operation.", e);
+			DBLogger.warning("Failed to update entry.", e);
 		} finally {
 			if (connection != null) {
 				try {
@@ -160,8 +165,8 @@ public abstract class AbstractDao implements Dao<Operation> {
 		}
 	}
 
-	protected void delete(Operation operation, String sqlFormat){
-		String id = String.valueOf(operation.getId());
+	protected void delete(Entry entry, String sqlFormat){
+		String id = String.valueOf(entry.getId());
 
 		String sql = String.format(sqlFormat, id);
 		DBLogger.info("SQL: " + sql);
@@ -173,7 +178,7 @@ public abstract class AbstractDao implements Dao<Operation> {
 			stmt.executeUpdate(sql);
 
 		} catch(SQLException e){
-			DBLogger.warning("Failed to delete operation.", e);
+			DBLogger.warning("Failed to delete entry.", e);
 		} finally {
 			if (connection != null) {
 				try {

@@ -12,8 +12,10 @@ import java.io.IOException;
 
 /**
  * An operation.
+ * Depends on:  model/ModelLogger.java
+ *              model/ModelException.java
 */
-public class Operation {
+public class Entry {
 
     private static SimpleDateFormat dateFormat;
     static {      
@@ -52,7 +54,7 @@ public class Operation {
      * @param description   description of operation
      * @param tags          tags
      */
-    public Operation(final int id, final BigDecimal sum, final Date date,
+    public Entry(final int id, final BigDecimal sum, final Date date,
                      final String description, final String... tags) {
         this.id = id;
         this.sum = sum;
@@ -60,19 +62,19 @@ public class Operation {
         if (description == null) this.description = "";
         else this.description = description;
         setTags(tags);       
-        ModelLogger.info("new Operation Constructed");
+        ModelLogger.info("new Entry Constructed");
         ModelLogger.info(toString());
     }
 
     /**
      * Constructor.
-     * Same as public Operation(BigDecimal, Date, String, String... ),
+     * Same as public Entry(BigDecimal, Date, String, String... ),
      * except the date. Sets current date.
      * @param sum       how much money spent or received
      * @param description   description of operation
      * @param tags          tags
      */
-    public Operation(final int id, final BigDecimal sum,
+    public Entry(final int id, final BigDecimal sum,
                      final String description, final String... tags) {
         this(id, sum, new Date(), description, tags);
     }
@@ -84,7 +86,7 @@ public class Operation {
      * @param description   description of operation
      * @param tagsStr         tags
      */
-    public Operation(final String sumStr, final String dateStr,
+    public Entry(final String sumStr, final String dateStr,
                      final String description, final String tagsStr) 
                                             throws ModelException {
        
@@ -103,7 +105,7 @@ public class Operation {
     /**
      * Constructor for adding and changing.
      */
-    public Operation() { 
+    public Entry() { 
         this.sum = null;
         this.date = null;
         this.description = null;
@@ -285,21 +287,21 @@ public class Operation {
         
         if (obj == null || getClass() != obj.getClass()) return false;
 
-        Operation op = (Operation) obj;
+        Entry entry = (Entry) obj;
 
-        if (id != op.getId()) return false;        
+        if (id != entry.getId()) return false;        
 
-        if (sum != null ? !sum.equals(op.getSum())
-                            : op.getSum() != null) return false;
+        if (sum != null ? !sum.equals(entry.getSum())
+                            : entry.getSum() != null) return false;
        
-        if (date != null ? !date.equals(op.getDate())
-                         : op.getDate() != null) return false;
+        if (date != null ? !date.equals(entry.getDate())
+                         : entry.getDate() != null) return false;
         
-        if (tags != null ? !tags.equals(op.getTags())
-                         : op.getTags() != null) return false;
+        if (tags != null ? !tags.equals(entry.getTags())
+                         : entry.getTags() != null) return false;
 
-        if (description != null ? !description.equals(op.getDescription())
-                                : op.getDescription() != null) return false;
+        if (description != null ? !description.equals(entry.getDescription())
+                                : entry.getDescription() != null) return false;
 
         return true;
     }    

@@ -1,12 +1,18 @@
 package kazarin.my_money.db;
 
-import kazarin.my_money.model.Operation;
+import kazarin.my_money.model.Entry;
 
 import java.util.Properties;
 
+/*
+ * Depends on:  db/Dao.java
+ *              db/MySqlDao.java
+ *              db/HHSqlDao.java
+ *              model/Entry.java
+ */
 public class DaoFactory {
 
-	public static Dao<Operation> getDao(Properties properties) throws DaoException {
+	public static Dao<Entry> getDao(Properties properties) throws DaoException {
 		String type = properties.getProperty("DB type");
 		switch (type) {
 

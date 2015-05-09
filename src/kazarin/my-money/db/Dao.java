@@ -11,14 +11,14 @@ public interface Dao<T> {
 	 *
 	 * @return list of rows
 	 */
-	public List<T> getAll();
+	public List<T> getAll() throws DaoException;
 	
 	/**
 	 * Adds the row to table.
 	 *
 	 * @param row to adding to table
 	 */
-	public void add(T object);
+	public void add(T object) throws DaoException;
 	
 	/**
 	 * Updates the row in the table.

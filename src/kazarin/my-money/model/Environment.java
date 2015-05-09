@@ -1,6 +1,8 @@
 package kazarin.my_money.model;
 
-import kazarin.my_money.db.*;
+import kazarin.my_money.db.Dao;
+import kazarin.my_money.db.DaoFactory;
+import kazarin.my_money.db.DaoException;
 
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -20,8 +22,17 @@ import java.util.Arrays;
  * Singletone.
  */
 public final class Environment {
+    private static final String HOME_PATH;
+    private static final String PROGRAMM_DATA_PATH = "mymoney";
+    private static final String SEPARATOR;
+    private static final String EXTENSION_PROPERTIES = ".properties";
+    private static final String DB_LIST_PROPERTY = "dbNames";
+        static {
+            HOME_PATH = System.getProperty("user.home");
+            SEPARATOR = System.getProperty("file.separator");
+        }
 
-    private List<Operations> accountings;
+    private List<Accounting> accountings;
     
     /**
      * Properties.
@@ -51,11 +62,11 @@ public final class Environment {
      */
     private Environment() throws ModelException {        
 
-        directory = System.getProperty("user.home") + "/mymoney";
-        this.propertyDir = Paths.get(directory);
-        this.propertyFile = Paths.get(directory + "/accountings.properties");
+        directory = HOME_PATH + "/mymoney";
+        propertyDir = Paths.get(directory);
+        propertyFile = Paths.get(directory + "/accountings.properties");
         ModelLogger.info("directory = " + directory + "\n\t" + "propertyFile = " + this.propertyFile);
-        accountings = new ArrayList<Operations>();
+        accountings = new ArrayList<Accounting>();
         properties = new Properties();
         if (!Files.exists(propertyFile)) {        
             ModelLogger.warning("Property File doesn't exist.");
@@ -63,11 +74,11 @@ public final class Environment {
         } else {
             try {                
                 properties.load(new FileReader(propertyFile.toString()));
-                String accountingsList = properties.getProperty("dbNames");
+                String accountingsList = properties.getProperty(DB_LIST_PROPERTY);
                     ModelLogger.info("accountingsList: " + accountingsList);
                 String[] opsArray = accountingsList.split(",");
                 for (String ops : opsArray) {
-                    accountings.add(new Operations(ops.trim()));
+                    accountings.add(new Accounting(ops.trim()));
                 }
                 
             } catch (IOException e) {
@@ -128,7 +139,7 @@ public final class Environment {
         ModelLogger.info("Start creating...");
         Properties pr = createProperiesDB(user, password, host, dbName, db);             
         try {
-            Dao<Operation> dao = DaoFactory.getDao(pr);
+            Dao<Entry> dao = DaoFactory.getDao(pr);
             dao.createDB(dbName);
             if (!Files.exists(propertyFile)) {
                 if (!Files.exists(propertyDir)) {
@@ -157,18 +168,18 @@ public final class Environment {
     public void connectToExistingAccounting(String user, String password,
                     String host, String dbName, String db) throws ModelException {
             createProperiesDB(user, password, host, dbName, db);
-            accountings.add(new Operations(dbName));
+            accountings.add(new Accounting(dbName));
             addNewDbToProperties(dbName);
     } 
 
-    private void addNewDbToProperties(String dbName) {
-        String dbNames = properties.getProperty("dbNames");
-            if (dbNames == null) {
-                dbNames = dbName;
+    private void addNewDbToProperties(String newDbName) {
+        String dbList = properties.getProperty(DB_LIST_PROPERTY);
+            if (dbList == null) {
+                dbList = newDbName;
             } else {
-                dbNames += "," + dbName;
+                dbList += "," + newDbName;
             }
-            properties.setProperty("dbNames", dbNames);
+            properties.setProperty(DB_LIST_PROPERTY, dbList);
             try {
                 properties.store(new FileWriter(propertyFile.toString()),
                                                                     "comment");
@@ -208,13 +219,13 @@ public final class Environment {
         } 
         return newProps;
     }
-    public List<Operations> getAccountings() {
+    public List<Accounting> getAccountings() {
         return accountings;
     }
 
-    public Operations getOperationsByName(String dbName) {
-        for (Operations ops : accountings) {
-            if (ops.getName().equals(dbName)) return ops;
+    public Accounting getOperationsByName(String dbName) {
+        for (Accounting acc : accountings) {
+            if (acc.getName().equals(dbName)) return acc;
         }
         ModelLogger.warning("failed to getOperationsByName");
         return null;

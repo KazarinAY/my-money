@@ -3,15 +3,14 @@
  */
 package kazarin.my_money.db;
 
-import kazarin.my_money.model.Operation;
-
-import java.util.logging.*;
-import java.io.IOException;
+import kazarin.my_money.model.Entry;
 
 import java.util.Properties;
 
 /**
  * Provides access to the operations table in database.
+ * Depends on:  model/Entry.java
+ *				db/AbstractDao.java
  */
 public class HSqlDao extends AbstractDao{
  
@@ -23,23 +22,23 @@ public class HSqlDao extends AbstractDao{
 	}
 
 	@Override
-	public void add(Operation operation){
-		add(operation, "INSERT INTO operations "
+	public void add(Entry entry) throws DaoException {
+		add(entry, "INSERT INTO operations "
 						+ "(op_sum, op_date, op_description, op_tags) "
 						+ "VALUES ('%s', '%s', \"%s\", \"%s\");");
 	}
 
 	@Override
-	public void update(Operation oldOperation){			
-		update(oldOperation, "UPDATE operations SET "
+	public void update(Entry oldEntry){			
+		update(oldEntry, "UPDATE operations SET "
 							+ "op_sum='%s', op_date='%s', "
 							+ "op_description=\"%s\", op_tags=\"%s\" "
 							+ "WHERE op_id='%s';");	
 	}
 
 	@Override
-	public void delete(Operation operation){
-		delete(operation, "DELETE FROM operations WHERE op_id='%s';");
+	public void delete(Entry entry){
+		delete(entry, "DELETE FROM operations WHERE op_id='%s';");
 	}
 
 	@Override
