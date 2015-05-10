@@ -1,0 +1,25 @@
+							План разработки
+
+Окно с кнопками и менюшками									//in developing		
+Календарь при выборе дат									//do not started yet
+Создать новый кошелек (для обоих СУБД)						//in developing
+Подключиться к базе данных (для обоих СУБД)					//in developing
+Отключиться от базы (для обоих СУБД)						//in developing
+Удалить базу (для обоих СУБД)								//in developing
+Переименовать кошелек										//do not started yet
+Добавить записть											//in developing
+Удалить записть												//in developing
+Редактировать записть										//in developing
+Вывод статистики											//do not started yet	
+Мультиплатформенность										//do not started yet
+Сортировка													//do not started yet
+Фильтр по дате												//do not started yet
+Фильтр по тэгу (Фильтр по доходам\расходам)					//do not started yet
+Экспорт\импорт в txt										//in developing
+Экспорт\импорт в xls										//do not started yet
+Авторизация (пароль при входе?)								//do not started yet	
+Окно с графиком (доход\расход\разница)						//do not started yet
+Окно с диаграммами (какими? тэги, доход\расход еще что?)	//do not started yet
+Выбор языков (арн\рус)										//do not started yet
+Консольный режим											//do not started yet
+Печать на принтер											//do not started yet
