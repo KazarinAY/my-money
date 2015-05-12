@@ -29,23 +29,12 @@ import java.io.FileReader;
 
 /*
  * Depends on:  model/Entry.java
+ *              model/Env.java
  *              db/Dao.java
  *              db.DaoFactory.java
  *              db.DaoException.java
  */
 public final class Accounting {
-
-    private static SimpleDateFormat dateFormat;
-    private static final String HOME_PATH;
-    private static final String PROGRAMM_DATA_PATH = "mymoney";
-    private static final String SEPARATOR;
-    private static final String EXTENSION_PROPERTIES = ".properties";
-    private static final String DB_NAME_PROPERTY = "dbName";
-    static {      
-        dateFormat = new SimpleDateFormat("dd-MM-yyyy", Locale.ENGLISH);
-        HOME_PATH = System.getProperty("user.home");
-        SEPARATOR = System.getProperty("file.separator");
-    }
 
     private String name;
 
@@ -53,27 +42,21 @@ public final class Accounting {
 
     private List<Entry> entryList;
  
-    public Accounting(String dbName) throws ModelException {
-        
-        entryList = new ArrayList<>();
-        String directory = HOME_PATH + SEPARATOR + PROGRAMM_DATA_PATH;
-        String propertyFile = directory + SEPARATOR + dbName + EXTENSION_PROPERTIES;
+    public Accounting(String dbName) {        
+        entryList = new ArrayList<>();        
+        String propertyFile = Env.FULL_DATA_DIR + Env.SEP + dbName + Env.EXTENSION_PROPERTIES;
         Properties properties = new Properties();
         try {
-                properties.load(new FileReader(propertyFile));
-        } catch (IOException e) {
-            ModelLogger.warning("Failed to load properties file.", e);
-            throw new ModelException("Accounting Constructor faild.\t"
-                                                        + e.getMessage());
-        }
-        name = properties.getProperty(DB_NAME_PROPERTY);
-        try {
+            properties.load(new FileReader(propertyFile));
+            name = properties.getProperty(Env.DB_NAME_PROPERTY);
             dao = DaoFactory.getDao(properties);
             entryList = dao.getAll();
+        } catch (IOException e) {
+            ModelLogger.warning("Failed to load properties file.", e);
+            throw new ModelException("Accounting Constructor faild.", e);
         } catch (DaoException de) {
             ModelLogger.warning("Failed to getDao");
-            throw new ModelException("Accounting Constructor faild.\t"
-                                                        + de.getMessage());
+            throw new ModelException("Accounting Constructor faild.", de);
         }
     }  
 
@@ -81,42 +64,17 @@ public final class Accounting {
         return name;
     }
 
-    /**
-     * Prints operations statistic.
-     * For console.
-     */
-    public void printStatistic() {
-        if (entryList.size() == 0) {
-            System.out.println("No entrys");
-            return;
-        }
-        BigDecimal income = BigDecimal.ZERO;
-        BigDecimal consumption = BigDecimal.ZERO;
-        for (Entry entry : entryList) {
-            if (entry.getSum().compareTo(BigDecimal.ZERO) == -1) {
-                consumption = consumption.add(entry.getSum());
-            } else if (entry.getSum().compareTo(BigDecimal.ZERO) == 1) {
-                income = income.add(entry.getSum());
-            }
-        }
-        BigDecimal balance = income.add(consumption);
-        System.out.println("Total income = " + income + ", total consumption = "
-                                             + consumption);
-        System.out.println("Balance = " + balance + ", total operations = "
-                                        + entryList.size());
-    }
-    
     /**     
      * Adds an entry to the entryList.
      * @param entry      
      * @throws ModelException 
      */
-    public void add(Entry entry) throws ModelException { 
+    public void add(Entry entry) { 
         try{
             dao.add(entry);
             setList(dao.getAll());
         } catch (DaoException de) {
-            throw new ModelException(de.getMessage());
+            throw new ModelException("Failed to add entry!", de);
         }
         
     }  
@@ -126,12 +84,12 @@ public final class Accounting {
      * @param entry
      * @throws ModelException 
      */
-    public void delete(Entry entry) throws ModelException {
+    public void delete(Entry entry) {
         try{
             dao.delete(entry);
         setList(dao.getAll());
         } catch (DaoException de) {
-            throw new ModelException(de.getMessage());
+            throw new ModelException("Failed to delete entry!", de);
         }
     }
 
@@ -140,7 +98,7 @@ public final class Accounting {
      * @param entry
      * @throws ModelException
      */
-    public void change(Entry entry) throws ModelException { 
+    public void change(Entry entry) { 
        // dao.update(operationToChange);
     }
 

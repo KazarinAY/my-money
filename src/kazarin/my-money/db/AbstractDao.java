@@ -19,35 +19,41 @@ import java.util.Locale;
  */
 public abstract class AbstractDao implements Dao<Entry> {
 
-	protected Properties propertiesDB;
-	protected Connection connection;
-	protected String url;
+	private Properties propertiesDB;
+	private Connection connection;
+	private String url;
+	private String driver;
+	private String user;
+	private String password;
 
 	/**
 	 * Constracts the AbstractDao.
  	 */
-	public AbstractDao(Properties propertiesDB) throws DaoException {
+	public AbstractDao(Properties propertiesDB) {
 		this.propertiesDB = propertiesDB;
 		url = propertiesDB.getProperty("url");
+		driver = propertiesDB.getProperty("driver");
+		user = propertiesDB.getProperty("user");
+		password = propertiesDB.getProperty("password");
 		
 		try {
-			DBLogger.info("DRIVER: " + propertiesDB.getProperty("driver"));
-            Class.forName(propertiesDB.getProperty("driver"));
+			
+			DBLogger.info("DRIVER: " + driver);
+            Class.forName(driver);
             DBLogger.info("DRIVER... OK");
-        }catch (ClassNotFoundException e) {
-            DBLogger.warning("Failed to find driver.", e);
-            throw new DaoException("Failed to find driver.");
-        }
-        
-        try {	
-			connection = DriverManager.getConnection(url, propertiesDB);
+
+            connection = DriverManager.getConnection(url, propertiesDB);
 			DBLogger.info("CONNECTION... OK");
-		} catch(SQLException e) {			
+        
+        } catch (ClassNotFoundException e) {
+            DBLogger.warning("Failed to find driver.", e);
+            throw new DaoException("Failed to find driver.", e);
+        } catch(SQLException e) {			
 			DBLogger.warning("Failed to get connection.", e);
 			DBLogger.warning("\turl=" + url
-						+ "\n\tuser=" + propertiesDB.getProperty("user")
-						+ "\n\tpassword=" + propertiesDB.getProperty("password"));
-			throw new DaoException("Failed to get connection.");
+						+ "\n\tuser=" + user
+						+ "\n\tpassword=" + password);
+			throw new DaoException("Failed to get connection.", e);
 		} finally {
 			if (connection != null) {
 				try {
@@ -57,11 +63,10 @@ public abstract class AbstractDao implements Dao<Entry> {
 				}				
 			}
 		}
-		
 	}
 
 	@Override
-	public List<Entry> getAll() throws DaoException {
+	public List<Entry> getAll() {
 		String sql = "SELECT * FROM operations;";
 		DBLogger.info("SQL: " + sql);
 		List<Entry> list = new ArrayList<Entry>();
@@ -85,7 +90,7 @@ public abstract class AbstractDao implements Dao<Entry> {
 			}
 		} catch(SQLException e){
 			DBLogger.warning("Failed to get all.", e);
-			throw new DaoException("Failed to get all.");
+			throw new DaoException("Failed to get all.", e);
 		} finally {
 			if (connection != null) {
 				try {
@@ -99,7 +104,7 @@ public abstract class AbstractDao implements Dao<Entry> {
 		return list;
 	}
 
-	protected void add(Entry entry, String sqlFormat) throws DaoException {
+	protected void add(Entry entry, String sqlFormat) {
 		String sum = entry.getSum().toString();
 		SimpleDateFormat dateFormat =
                             new SimpleDateFormat("yyyy-MM-dd", Locale.ENGLISH);
@@ -191,7 +196,7 @@ public abstract class AbstractDao implements Dao<Entry> {
 	}
 
 	public void createDB(String dbName, String sqlFormat,
-								String createTable) throws DaoException{
+								String createTable) {
 
 		String sql = String.format(sqlFormat, dbName);
 		DBLogger.info("SQL: " + sql);

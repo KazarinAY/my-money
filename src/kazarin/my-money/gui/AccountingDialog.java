@@ -1,8 +1,8 @@
 package kazarin.my_money.gui;
 
-import kazarin.my_money.model.Environment;
-import kazarin.my_money.model.ModelException;
+import kazarin.my_money.model.Env;
 
+import javax.swing.JFrame;
 import javax.swing.JDialog;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -14,12 +14,6 @@ import javax.swing.JComboBox;
 
 public class AccountingDialog extends JDialog {
 
-		private static final String HOME_PATH;
-		static {
-			HOME_PATH = System.getProperty("user.home");
-		}
-		private static final String LOCALHOST = "localhost";
-
 		private String[] result;
 		private boolean isNew;
 		private String[] dbStrings;
@@ -30,8 +24,8 @@ public class AccountingDialog extends JDialog {
 		private JTextField textFieldDB;
 		private JComboBox<String> dbList;
 	
-	public AccountingDialog(boolean isNew) {
-		super(FrameHolder.getFrame(), "Enter information:", true);
+	public AccountingDialog(JFrame frame, boolean isNew) {
+		super(frame, "Enter information:", true);
 
 		this.isNew =isNew;
 
@@ -47,15 +41,10 @@ public class AccountingDialog extends JDialog {
 		textFieldHost = new JTextField(20);
 		JLabel labelDBName = new JLabel("DB name:");
 		textFieldDBName = new JTextField(20);
-		JLabel labelDB = new JLabel("DB (HSQL only):");		
-		
-		if (isNew) {
-			textFieldHost.setText(HOME_PATH);			
-			dbStrings = new String[]{"HSQL"};
-		} else {
-			textFieldHost.setText(LOCALHOST);
-			dbStrings = new String[]{"MySQL", "HSQL"};
-		}
+		JLabel labelDB = new JLabel("DB:");		
+
+		textFieldHost.setText(Env.LOCALHOST);
+		dbStrings = new String[]{"MySQL", "HSQL"};
 		dbList = new JComboBox<String>(dbStrings);
 		dbList.setSelectedIndex(0);
 		dbList.setEditable(false);
@@ -65,9 +54,9 @@ public class AccountingDialog extends JDialog {
 				JComboBox cb = (JComboBox)e.getSource();
         		String textInField = (String) cb.getSelectedItem();
         		if (textInField.equals("MySQL")) {
-        			textFieldHost.setText(LOCALHOST);
+        			textFieldHost.setText(Env.LOCALHOST);
         		} else if (textInField.equals("HSQL")) {
-        			textFieldHost.setText(HOME_PATH);
+        			textFieldHost.setText(Env.PROGRAMM_DATA_PATH);
         		}
 			}
 		});

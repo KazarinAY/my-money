@@ -14,37 +14,18 @@ import java.io.IOException;
  * An operation.
  * Depends on:  model/ModelLogger.java
  *              model/ModelException.java
+ *              model/Env.java
 */
 public class Entry {
-
-    private static SimpleDateFormat dateFormat;
-    static {      
-        dateFormat = new SimpleDateFormat("dd-MM-yyyy", Locale.ENGLISH);
-    }
-
-    /**
-     * The operation id.
-     */
+    
     private int id;
 
-    /**
-     * The amount of money.
-     */
     private BigDecimal sum;
 
-    /**
-     * When was the operation.
-     */
     private Date date;
 
-    /**
-     * Tags.
-     */
     private Set<String> tags;
 
-    /**
-     * Description of the operation.
-     */
     private String description;
 
     /**
@@ -87,12 +68,10 @@ public class Entry {
      * @param tagsStr         tags
      */
     public Entry(final String sumStr, final String dateStr,
-                     final String description, final String tagsStr) 
-                                            throws ModelException {
-       
+                     final String description, final String tagsStr) {       
         try {
             sum = new BigDecimal(sumStr);
-            date = dateFormat.parse(dateStr); 
+            date = Env.DATE_FORMAT.parse(dateStr); 
         } catch (ParseException pe) {
             throw new ModelException("parseDate ParseException");
         } catch (NumberFormatException nfe) {
@@ -137,7 +116,7 @@ public class Entry {
      * @return date string
      */
     public final  String getDateStr() {
-        return dateFormat.format(date);
+        return Env.DATE_FORMAT.format(date);
     }
 
     /**
@@ -202,7 +181,7 @@ public class Entry {
                             throw new IllegalArgumentException("date == null");
 
         try {               
-            this.date = dateFormat.parse(dateString);
+            this.date = Env.DATE_FORMAT.parse(dateString);
         } catch (ParseException pe) {
             throw new IllegalArgumentException("date mast be dd-MM-yyyy");
         }
@@ -246,7 +225,7 @@ public class Entry {
         }
         
         return "add " + sum.toString() + ":" 
-                         + dateFormat.format(date) + ":"
+                         + Env.DATE_FORMAT.format(date) + ":"
                          + descriptionStr + "#" + tagsStr;
     }
     
@@ -256,7 +235,7 @@ public class Entry {
         if (sum != null) sumStr = sum.toString();
 
         String dateStr = "null";
-        if (date != null) dateStr = dateFormat.format(date);
+        if (date != null) dateStr = Env.DATE_FORMAT.format(date);
         
         String descriptionStr = "";
         if (description != null) {

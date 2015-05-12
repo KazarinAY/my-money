@@ -11,14 +11,14 @@ public interface Dao<T> {
 	 *
 	 * @return list of rows
 	 */
-	public List<T> getAll() throws DaoException;
+	public List<T> getAll();
 	
 	/**
 	 * Adds the row to table.
 	 *
 	 * @param row to adding to table
 	 */
-	public void add(T object) throws DaoException;
+	public void add(T object);
 	
 	/**
 	 * Updates the row in the table.
@@ -39,5 +39,5 @@ public interface Dao<T> {
 	 *
 	 * @param name of DB
 	 */
-	public void createDB(String dbName) throws DaoException;
+	public void createDB(String dbName);
 }

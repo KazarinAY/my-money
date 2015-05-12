@@ -1,8 +1,8 @@
 package kazarin.my_money.gui;
 
-import kazarin.my_money.model.Entry;
+import kazarin.my_money.model.Entry; 
 import kazarin.my_money.model.Accounting;
-import kazarin.my_money.model.Environment;
+import kazarin.my_money.model.Env; 
 import kazarin.my_money.model.ModelException;
 
 import javax.swing.JFrame;
@@ -44,21 +44,13 @@ import java.math.BigDecimal;
  * Displays a window that contains a tabbed pane
  * with two panels that contains tables.
  */
-public class MainScreen extends JPanel{
-	private static final String CONNECT_TO_EXISTING = "Connect to existing";
-	private static final String NEW_ACCOUNTING = "new accounting";
-	private static final int MAX_ACCAUNTINGS_NUMBET = 5;
-	private static final boolean NEW = true;
-	private static final boolean CONNECT = false;
-	private static final String NEW_ENTRY = "New entry";
+public class MainScreen extends JPanel{	
 
 	private static JFrame frame;
-
-	private Environment env;
-	private Accounting accounting;
-	private List<Accounting> accList;
-	private List<Entry> opList;
-	private String currentAccounting;
+	
+	private List<Accounting> accountings;
+	private List<Entry> entries;
+	private Accounting currentAccounting;
 	String[] result;
 
 	private ActionListener actionListener;	
@@ -118,21 +110,20 @@ public class MainScreen extends JPanel{
 	private MainScreen(){
 		super(new BorderLayout());
 
-		actionListener = new Listener();
-
-		try {
-			env = Environment.getInstance();
-			accList = env.getAccountings();
-		} catch (ModelException me) {
-			textArea.setText(me.getMessage());
-			GuiLogger.warning("Environment.getInstance()");
+		accountings = new ArrayList<Accounting>();
+    	String[] accauntingsArray = Env.getAccountings();	
+		for (String accName : accauntingsArray) {
+    		accountings.add(new Accounting(accName.trim()));
+    		GuiLogger.info("New Accounting added to list.");
 		}
+
+		actionListener = new Listener();
 
 //EAST		
 		bunchOfButtons = new ArrayList<BunchOfButtons>();
 		buttonGroup = new ButtonGroup();
-		if (accList.size() > 0) {
-			for (Accounting acc : accList) {
+		if (accountings.size() > 0) {
+			for (Accounting acc : accountings) {				
 				JRadioButton rButton = new JRadioButton(acc.getName());
 				rButton.addActionListener(actionListener);
 				JButton edit = new JButton("edit");
@@ -142,29 +133,23 @@ public class MainScreen extends JPanel{
 				bunchOfButtons.add(new BunchOfButtons(rButton, edit, del));
 			}
 			bunchOfButtons.get(0).getJRButton().setSelected(true);
-			currentAccounting = bunchOfButtons.get(0).getJRButton().getActionCommand();
 
 			for (BunchOfButtons btn : bunchOfButtons) {
 				buttonGroup.add(btn.getJRButton());
 			}
 
-			accounting = env.getOperationsByName(currentAccounting);
-			opList = accounting.getList();
+			currentAccounting = accountings.get(0);
+			entries = currentAccounting.getList();
 
 		} else {		// no accountings
-			opList = new ArrayList<Entry>();
+			entries = new ArrayList<Entry>();
 		}
 		eastPanel = new JPanel(new GridLayout(3, 0));
-		newEntry = new JButton(NEW_ENTRY);
+		newEntry = new JButton(Env.NEW_ENTRY);
 		newEntry.addActionListener(actionListener);
 		eastPanel.add(newEntry);
-		radioButtonsPanel = new JPanel(new GridLayout(0, 3));
-		JLabel label1 = new JLabel("Accountings:");
-		JLabel label2 = new JLabel("");
-		JLabel label3 = new JLabel("");
-		radioButtonsPanel.add(label1);
-		radioButtonsPanel.add(label2);
-		radioButtonsPanel.add(label3);
+		radioButtonsPanel = new JPanel(new GridLayout(MAX_ACCAUNTINGS_NUMBET, 3));
+		
 		for (BunchOfButtons btn : bunchOfButtons) {
 			radioButtonsPanel.add(btn.getJRButton());
 			radioButtonsPanel.add(btn.getEdit());
@@ -173,11 +158,11 @@ public class MainScreen extends JPanel{
 		eastPanel.add(radioButtonsPanel);
 		buttonsPanel = new JPanel(new GridLayout(2, 0));
 		
-		createNewButton = new JButton(NEW_ACCOUNTING);		
+		createNewButton = new JButton(Env.NEW_ACCOUNTING);		
 		createNewButton.addActionListener(actionListener);
 		buttonsPanel.add(createNewButton);
        
-		conToExButton = new JButton(CONNECT_TO_EXISTING);
+		conToExButton = new JButton(Env.CONNECT_TO_EXISTING);
 		conToExButton.addActionListener(actionListener);
         buttonsPanel.add(conToExButton);	
 		
@@ -221,12 +206,12 @@ public class MainScreen extends JPanel{
 			
 			@Override
 			public int getRowCount() {
-				return opList.size();
+				return entries.size();
 			}
 			
 			@Override
 			public Object getValueAt(int row, int col) {
-				Entry entry = opList.get(row);
+				Entry entry = entries.get(row);
 				switch(col){
 					case 0: return entry.getDate();
 					case 1: return entry.getSum();
@@ -249,12 +234,12 @@ public class MainScreen extends JPanel{
 			
 			@Override
 			public void setValueAt(Object aValue, int row, int col) {
-				if(opList.size() < row) { 								//add new row
+				if(entries.size() < row) { 								//add new row
 					Entry entry = new Entry();
 					entry.setSum((BigDecimal)aValue);
-					opList.add(entry);			
+					entries.add(entry);			
 				} else {													//change row
-					Entry entry = opList.get(row);
+					Entry entry = entries.get(row);
 					switch(col){
 						case 0: entry.setDate((Date)aValue);
 								break;
@@ -277,7 +262,7 @@ public class MainScreen extends JPanel{
 			 * @param row to delete
 			 */
 			public void deleteRow(int row) {
-				opList.remove(row);
+				entries.remove(row);
 				fireTableRowsDeleted(row, row);				
 			}
 			
@@ -305,11 +290,10 @@ public class MainScreen extends JPanel{
    		column.setMaxWidth(0);	//id
    		column.setWidth(0);		//column
 
-		scrollPane = new JScrollPane(table);
-
-		table.setPreferredScrollableViewportSize(new Dimension(600, 250));
+   		table.setPreferredScrollableViewportSize(new Dimension(600, 250));
 		table.setFillsViewportHeight(true);
-		
+
+		scrollPane = new JScrollPane(table);
 		add(scrollPane, BorderLayout.WEST);
 
 //NORTH
@@ -361,7 +345,7 @@ public class MainScreen extends JPanel{
 			file.add(exit);
 
 		accMenu = new JMenu("accountings");
-			newAcc = new JMenuItem(NEW_ACCOUNTING);
+			newAcc = new JMenuItem(Env.NEW_ACCOUNTING);
 			newAcc.addActionListener(actionListener);
 			accMenu.add(newAcc);
 
@@ -369,7 +353,7 @@ public class MainScreen extends JPanel{
 			delAcc.addActionListener(actionListener);
 			accMenu.add(delAcc);
 
-			connectToAcc = new JMenuItem(CONNECT_TO_EXISTING);
+			connectToAcc = new JMenuItem(Env.CONNECT_TO_EXISTING);
 			connectToAcc.addActionListener(actionListener);
 			accMenu.add(connectToAcc);
 
@@ -438,7 +422,7 @@ public class MainScreen extends JPanel{
 	private void addNewJRButton(String dbName) {
     			try {
 					Accounting newOps = new Accounting(dbName);
-					accList.add(newOps);
+					accountings.add(newOps);
 					JRadioButton rButton = new JRadioButton(dbName);
 					rButton.addActionListener(actionListener);
 					JButton edit = new JButton("edit");
@@ -451,19 +435,28 @@ public class MainScreen extends JPanel{
 					radioButtonsPanel.add(edit);
 					radioButtonsPanel.add(del);
 					rButton.setSelected(true);
-					currentAccounting = rButton.getActionCommand();					
+					currentAccounting = getAccountingByName(dbName);				
 				} catch (ModelException me) {
 					textArea.append("\n" + me.getMessage());
 				}
 	}
 
 	private boolean isAlredyExists(String newAcc) {
-		for (Accounting ops : accList) {
+		for (Accounting ops : accountings) {
 			if (ops.getName().equals(newAcc))
 				return true;
 		}
 		return false;
 	}
+
+	private Accounting getAccountingByName(String dbName) {
+        for (Accounting acc : accountings) {
+            if (acc.getName().equals(dbName)) return acc;
+        }
+        GuiLogger.warning("failed to getAccountingByName");
+        throw new RuntimeException("Тo accounting of that name");
+    }
+
 	/*
 	wtf is this?
 	*/
@@ -478,57 +471,61 @@ public class MainScreen extends JPanel{
 			String command = e.getActionCommand();
 			GuiLogger.info("command = " + command);			
 			switch (command) {
-				case CONNECT_TO_EXISTING:
-					if (accList.size() >= MAX_ACCAUNTINGS_NUMBET) {
+				case Env.CONNECT_TO_EXISTING:
+				/*
+					if (accountings.size() >= Env.MAX_ACCAUNTINGS_NUMBET) {
 						JOptionPane.showMessageDialog(frame,
-                                "Alredy to mutch accountings.",
+                                "To mutch accountings alredy.",
                                 "Warning",
                                 JOptionPane.WARNING_MESSAGE);
 								break;
 					}
-					//AccountingDialog connectDialog = new AccountingDialog(CONNECT);
-					//result = connectDialog.getResultDbName();
+					AccountingDialog connectDialog = new AccountingDialog(CONNECT);
+					result = connectDialog.getResultDbName();
 					if (result == null) break; //if Canceled
 					GuiLogger.info("resultDbName: " + result[3]);
 					if (isAlredyExists(result[3])) {							
-						textArea.append("\n" + "such accounting alredy exists");
+						textArea.append("\n" + "such currentAccounting alredy exists");
 						break;
 					}
 					try {
 						env.connectToExistingAccounting(result[0], result[1],				//(user, password,
 												result[2], result[3], result[4]);	//host, dbName, dbType);						
-						textArea.append("\n" + "Connected to accounting.");
+						textArea.append("\n" + "Connected to currentAccounting.");
 					} catch (ModelException me) {
 						String message = me.getMessage();
 						GuiLogger.warning("env.connectToExistingAccounting\n" + message);
 						textArea.append("\n" + message);
 					}
 					addNewJRButton(result[3]);
-					accounting = env.getOperationsByName(currentAccounting);
-					opList = accounting.getList();
+					currentAccounting = env.getAccountingByName(currentAccountingString);
+					entries = currentAccounting.getList();
 					revalidate();
 					repaint();
+				*/
 					break;
-				case NEW_ACCOUNTING:						
-					if (accList.size() >= MAX_ACCAUNTINGS_NUMBET) {
+				case Env.NEW_ACCOUNTING:
+				/*					
+					if (accountings.size() >= Env.MAX_ACCAUNTINGS_NUMBET) {
 						JOptionPane.showMessageDialog(frame,
-                                "Alredy to mutch accountings.",
+                                "To mutch accountings alredy.",
                                 "Warning",
                                 JOptionPane.WARNING_MESSAGE);
 								break;
 					}
-					//AccountingDialog newDialog = new AccountingDialog(NEW);
-					//result = newDialog.getResultDbName();
+					AccountingDialog newDialog = new AccountingDialog(frame, Env.NEW);
+					result = newDialog.getResultDbName();
 					if (result == null) break; //if Canceled
 					GuiLogger.info("resultDbName: " + result[3]);
 					if (isAlredyExists(result[3])) {							
-						textArea.append("\n" + "such accounting alredy exists");
+						textArea.append("\n" + "such currentAccounting alredy exists");
 						break;
 					}
 					try {							
-						env.createNewAccounting(result[0], result[1],				//(user, password,
-												result[2], result[3], result[4]);	//host, dbName, dbType);						
-						textArea.append("\n" + "New accounting created.");
+						env.createNewAccounting(result[0], result[1],			//(user, password,
+												result[2], result[3], result[4]);//host, dbName, 
+																				//	dbType);
+						textArea.append("\n" + "New currentAccounting created.");
 					} catch (ModelException me) {
 						String message = me.getMessage();
 						GuiLogger.warning("env.createNewAccounting\n" + message);
@@ -537,26 +534,29 @@ public class MainScreen extends JPanel{
 					addNewJRButton(result[3]);
 					revalidate();
 					repaint();
+				*/
 					break;
 
-				case NEW_ENTRY:
-					//AddOperationDialog addOperationDialog = new AddOperationDialog(tableModel);
-					//addOperationDialog.show();						
-					//result = addOperationDialog.getResultDbName();
+				case Env.NEW_ENTRY:
+				/*
+					AddOperationDialog addOperationDialog = new AddOperationDialog(tableModel);
+					addOperationDialog.show();						
+					result = addOperationDialog.getResultDbName();
 					if (result == null) break; //if Canceled
-					Accounting accounting = env.getOperationsByName(currentAccounting);
+					Accounting currentAccounting = getAccountingByName(currentAccountingString);
 					try {
 						Entry addedOperation = new Entry(result[0], result[1], result[2], result[3]);
-						accounting.add(addedOperation);
+						currentAccounting.add(addedOperation);
 					} catch (ModelException me) {
 						String message = me.getMessage();
-						GuiLogger.warning("accounting.add(command)\n" + message);
+						GuiLogger.warning("currentAccounting.add(command)\n" + message);
 						textArea.append("\n" + message);
 						break;
 					}
-					opList = accounting.getList();
+					entries = currentAccounting.getList();
 					revalidate();
-					repaint();						
+					repaint();
+				*/					
 					break;
 				default:
 
@@ -568,6 +568,7 @@ public class MainScreen extends JPanel{
 	private static void createAndShowGUI() {
         //Create and set up the window.
         frame = new JFrame("My Money");
+        Env.init(frame);
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
         //Create and set up the content pane.
@@ -588,7 +589,7 @@ public class MainScreen extends JPanel{
         //Schedule a job for the event-dispatching thread:
         //creating and showing this application's GUI.
         javax.swing.SwingUtilities.invokeLater(new Runnable() {
-            public void run() {
+            public void run() {            	
                 createAndShowGUI();
             }
         });

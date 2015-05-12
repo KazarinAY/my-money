@@ -17,12 +17,12 @@ public class MySqlDao extends AbstractDao{
  	/**
 	 * Constracts the MySqlDao.
  	 */
-	MySqlDao(Properties properties) throws DaoException {	
+	MySqlDao(Properties properties) {	
 		super(properties);
 	}	
  	
  	@Override
-	public void add(Entry entry) throws DaoException {		
+	public void add(Entry entry) {		
 		add(entry, "INSERT INTO operations "
 								+ "(op_sum, op_date, op_description, op_tags) "
 								+ "VALUES ('%s', '%s', \"%s\", \"%s\");");
@@ -43,7 +43,7 @@ public class MySqlDao extends AbstractDao{
 	}
 
 	@Override
-	public void createDB(String dbName) throws DaoException {
+	public void createDB(String dbName) {
 		String createTable = 	"CREATE TABLE operations ("
 								      + "op_id INT NOT NULL AUTO_INCREMENT, "
 								      + "op_sum NUMERIC(10,2) NOT NULL, "

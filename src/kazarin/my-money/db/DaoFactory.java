@@ -12,7 +12,7 @@ import java.util.Properties;
  */
 public class DaoFactory {
 
-	public static Dao<Entry> getDao(Properties properties) throws DaoException {
+	public static Dao<Entry> getDao(Properties properties) {
 		String type = properties.getProperty("DB type");
 		switch (type) {
 

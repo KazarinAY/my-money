@@ -21,16 +21,7 @@ import java.util.Arrays;
  * Environment.
  * Singletone.
  */
-public final class Environment {
-    private static final String HOME_PATH;
-    private static final String PROGRAMM_DATA_PATH = "mymoney";
-    private static final String SEPARATOR;
-    private static final String EXTENSION_PROPERTIES = ".properties";
-    private static final String DB_LIST_PROPERTY = "dbNames";
-        static {
-            HOME_PATH = System.getProperty("user.home");
-            SEPARATOR = System.getProperty("file.separator");
-        }
+public final class Environment {    
 
     private List<Accounting> accountings;
     
@@ -62,8 +53,6 @@ public final class Environment {
      */
     private Environment() throws ModelException {        
 
-        directory = HOME_PATH + "/mymoney";
-        propertyDir = Paths.get(directory);
         propertyFile = Paths.get(directory + "/accountings.properties");
         ModelLogger.info("directory = " + directory + "\n\t" + "propertyFile = " + this.propertyFile);
         accountings = new ArrayList<Accounting>();
@@ -97,17 +86,7 @@ public final class Environment {
         return instance;
     }
 
-    /**
-     * Creates properties file.
-     */    
-    private void createProperiesFile(Path path) {
-        try {
-            Files.createFile(path);
-            ModelLogger.info("File " + path + " created.");
-        } catch (IOException e) {
-            ModelLogger.warning("Failed to create data file!");
-        }
-    }
+   
     
     /**
      * Creates properties directory.
@@ -215,7 +194,8 @@ public final class Environment {
             newProps.store(new FileWriter(pathToFile.toString()), "comment");
         }  catch (IOException e) {
             ModelLogger.warning("createProperiesDB: "
-                                        + "failed to stote properties file.");
+                                        + "failed to store properties file.");
+            ModelLogger.warning(e.getMessage());
         } 
         return newProps;
     }
