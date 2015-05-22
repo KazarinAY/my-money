@@ -41,24 +41,56 @@ public final class Accounting {
     private Dao<Entry> dao;
 
     private List<Entry> entryList;
+
+    private String propertyFile;
+
+    private Properties properties;
+
+    private Accounting() {
+        entryList = new ArrayList<Entry>();        
+        properties = new Properties();
+    }
  
-    public Accounting(String dbName) {        
-        entryList = new ArrayList<>();        
-        String propertyFile = Env.FULL_DATA_DIR + Env.SEP + dbName + Env.EXTENSION_PROPERTIES;
-        Properties properties = new Properties();
+    public Accounting(String name) {
+        this();
         try {
-            properties.load(new FileReader(propertyFile));
-            name = properties.getProperty(Env.DB_NAME_PROPERTY);
+            this.name = name;
+            propertyFile = Env.FULL_DATA_DIR + Env.SEP + name + Env.EXTENSION_PROPERTIES;
+            properties.load(new FileReader(propertyFile));            
             dao = DaoFactory.getDao(properties);
             entryList = dao.getAll();
         } catch (IOException e) {
             ModelLogger.warning("Failed to load properties file.", e);
-            throw new ModelException("Accounting Constructor faild.", e);
+            throw new ModelException("Accounting Constructor failed.", e);
         } catch (DaoException de) {
             ModelLogger.warning("Failed to getDao");
-            throw new ModelException("Accounting Constructor faild.", de);
+            throw new ModelException("Accounting Constructor failed.", de);
         }
-    }  
+    } 
+
+    public Accounting(String user, String password, String host,
+                        String dbName, String db) {
+        this();
+        this.name = dbName;
+        propertyFile = Env.FULL_DATA_DIR + Env.SEP + name + Env.EXTENSION_PROPERTIES;
+        setProperies(user, password, host, dbName, db);             
+        try {
+            Dao<Entry> dao = DaoFactory.getDao(properties);
+            dao.createDB(dbName);
+            createProperiesFile();
+            addNewDbToProperties();
+            entryList = dao.getAll();
+        } catch (DaoException de) {
+            Path pathToFile = Paths.get(propertyFile);
+            try {
+                Files.delete(pathToFile);
+            } catch (IOException ioe) {
+                ModelLogger.warning(ioe.getMessage());
+            }
+            ModelLogger.warning("Failed to createNewAccounting");
+            throw new ModelException("Faild to create New Accounting .", de);
+        }
+    }
 
     public String getName() {
         return name;
@@ -199,6 +231,56 @@ public final class Accounting {
         } catch (IOException e) {
                 ModelLogger.warning("Failed to load data from"
                                                         + fileName + " file!");
+        }
+    }
+
+    private void setProperies(String user, String password,
+                                    String host, String dbName, String db) {
+        ModelLogger.info("setProperies");
+        properties.setProperty("user", user);
+        properties.setProperty("password", password);
+        properties.setProperty("dbName", dbName);
+        if (db.equals("MySQL")){
+            properties.setProperty("DB type", "MySQL");
+            properties.setProperty("driver", "com.mysql.jdbc.Driver");
+            properties.setProperty("url", "jdbc:mysql:" + "//" + host
+                                                        + Env.SEP + dbName);
+        } else if (db.equals("HSQL")) {
+            properties.setProperty("DB type", "HSQL");
+            properties.setProperty("driver", "org.hsqldb.jdbc.JDBCDriver");
+            //TODO if host == file...
+            properties.setProperty("url", "jdbc:hsqldb:" + host 
+                                                        + Env.SEP + dbName);            
+        } else {
+            ModelLogger.info("setProperies: unknown DB");
+
+        }
+    }
+
+    private void createProperiesFile() {
+        Path path = Paths.get(propertyFile);
+        try {        
+            Files.createFile(path);
+            ModelLogger.info("File " + propertyFile + " created.");
+        }  catch (IOException e) {
+            ModelLogger.warning("Failed to create file!\t" + propertyFile);
+            throw new ModelException("Failed to create file!", e);
+        }
+    }
+
+    private void addNewDbToProperties() {
+        String dbList = properties.getProperty(Env.DB_LIST_PROPERTY);
+        if (dbList == null) {
+            dbList = name;
+        } else {
+            dbList += "," + name;
+        }
+        properties.setProperty(Env.DB_LIST_PROPERTY, dbList);
+        try {
+            properties.store(new FileWriter(propertyFile.toString()), "comment");
+        } catch (IOException e) {
+                ModelLogger.warning("Failed to addNewDbToProperties.");
+                throw new ModelException("Failed to addNewDbToProperties.", e);
         }
     }
 

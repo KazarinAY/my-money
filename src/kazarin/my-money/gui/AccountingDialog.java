@@ -15,7 +15,6 @@ import javax.swing.JComboBox;
 public class AccountingDialog extends JDialog {
 
 		private String[] result;
-		private boolean isNew;
 		private String[] dbStrings;
 		private JTextField textFieldUser;
 		private JTextField textFieldPassword;
@@ -24,10 +23,8 @@ public class AccountingDialog extends JDialog {
 		private JTextField textFieldDB;
 		private JComboBox<String> dbList;
 	
-	public AccountingDialog(JFrame frame, boolean isNew) {
-		super(frame, "Enter information:", true);
-
-		this.isNew =isNew;
+	public AccountingDialog() {
+		super(Env.getFrame(), "Enter information:", true);		
 
 		setLayout(new GridLayout(6, 2));
 		setLocation(300, 350);
@@ -56,7 +53,7 @@ public class AccountingDialog extends JDialog {
         		if (textInField.equals("MySQL")) {
         			textFieldHost.setText(Env.LOCALHOST);
         		} else if (textInField.equals("HSQL")) {
-        			textFieldHost.setText(Env.PROGRAMM_DATA_PATH);
+        			textFieldHost.setText(Env.FULL_DATA_DIR);
         		}
 			}
 		});
@@ -71,10 +68,7 @@ public class AccountingDialog extends JDialog {
 		add(textFieldDBName);
 		add(labelDB);
 		add(dbList);
-		/*
-		textFieldDB = new JTextField(20);
-		textFieldDB.setText("MySQL");
-		add(textFieldDB);*/
+
 		ActionListener actionListener = new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {

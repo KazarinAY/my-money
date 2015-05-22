@@ -34,6 +34,9 @@ public final class Env {
 	public static final boolean NEW = true;
 	public static final boolean CONNECT = false;
 	public static final String NEW_ENTRY = "New entry";
+    public static final String CREATE = "Create";
+    public static final String LIST_OF_ACCOUNTING = "List of accounting:";
+    public static final String THE_NEW_ACCOUNTING = "The new accounting:";
 	
 	public static final Properties ACCOUNTINGS_PROPERIES;
 	public static final String DB_LIST_PROPERTY = "dbNames";
@@ -73,20 +76,6 @@ public final class Env {
         return frame;
     }
 
-    private static final void createPropFile() {
-    	try {
-    			if (!Files.exists(DATA_PATH)) {
-		            Files.createDirectories(DATA_PATH);
-		            ModelLogger.info(DATA_PATH + "created");
-				}
-				Files.createFile(PROP_FILE_PATH);
-            	ModelLogger.info("File " + PROP_FILE_PATH + " created.");
-			}  catch (IOException e) {
-            	ModelLogger.warning("Failed to create file!\t" + PROP_FILE_PATH);
-            	throw new ModelException(e.getMessage());
-        	}
-    }
-
     public static final String[] getAccountings() {
     	String property = ACCOUNTINGS_PROPERIES.getProperty(DB_LIST_PROPERTY);
     	ModelLogger.info("property " + DB_LIST_PROPERTY + " = " + property);
@@ -95,5 +84,18 @@ public final class Env {
     	}
     	return new String[0];
     }
-     
+    
+    private static final void createPropFile() {
+        try {
+            if (!Files.exists(DATA_PATH)) {
+                Files.createDirectories(DATA_PATH);
+                ModelLogger.info(DATA_PATH + "created");
+            }
+            Files.createFile(PROP_FILE_PATH);
+            ModelLogger.info("File " + PROP_FILE_PATH + " created.");
+        }  catch (IOException e) {
+            ModelLogger.warning("Failed to create file!\t" + PROP_FILE_PATH);
+            throw new ModelException(e.getMessage());
+        }
+    }
 }

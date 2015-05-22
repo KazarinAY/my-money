@@ -17,16 +17,20 @@ import javax.swing.JRadioButton;
 import javax.swing.ButtonGroup;
 import javax.swing.JButton;
 import javax.swing.JTextArea;
+import javax.swing.JTextField;
 import javax.swing.JOptionPane;
 import javax.swing.JLabel;
 import javax.swing.JMenuBar;
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
 import javax.swing.JRadioButtonMenuItem;
+import javax.swing.JComboBox;
+import javax.swing.BoxLayout;
 
 import java.awt.BorderLayout;
 import java.awt.GridLayout;
 import java.awt.FlowLayout;
+
 import java.awt.Dimension;
 import java.awt.event.ActionListener; 
 import java.awt.event.ActionEvent;
@@ -64,8 +68,14 @@ public class MainScreen extends JPanel{
 	private ButtonGroup buttonGroup;	
 	private JPanel eastPanel;
 	private JPanel radioButtonsPanel;
-	private JPanel buttonsPanel;
-	private JButton createNewButton;
+	private JLabel listOfAccountingLabel;
+	private JPanel newAccountingPanel;
+	private JLabel theNewAccountingLabel;
+	private JPanel newAccountingSubPAnel;
+	private JTextField newAccaountText;
+	private String[] currencies;
+	private JComboBox<String> currencieList;
+	private JButton newAccountingButton;
 	private JButton conToExButton;
 //SOUTH
 	private JPanel southPanel;
@@ -119,8 +129,13 @@ public class MainScreen extends JPanel{
 
 		actionListener = new Listener();
 
-//EAST		
-		bunchOfButtons = new ArrayList<BunchOfButtons>();
+//EAST	
+		eastPanel = new JPanel(new BorderLayout());
+		newEntry = new JButton(Env.NEW_ENTRY);
+		newEntry.addActionListener(actionListener);
+		eastPanel.add(newEntry, BorderLayout.NORTH);
+		
+		bunchOfButtons = new ArrayList<BunchOfButtons>();		
 		buttonGroup = new ButtonGroup();
 		if (accountings.size() > 0) {
 			for (Accounting acc : accountings) {				
@@ -144,30 +159,39 @@ public class MainScreen extends JPanel{
 		} else {		// no accountings
 			entries = new ArrayList<Entry>();
 		}
-		eastPanel = new JPanel(new GridLayout(3, 0));
-		newEntry = new JButton(Env.NEW_ENTRY);
-		newEntry.addActionListener(actionListener);
-		eastPanel.add(newEntry);
-		radioButtonsPanel = new JPanel(new GridLayout(MAX_ACCAUNTINGS_NUMBET, 3));
 		
+		radioButtonsPanel = new JPanel(new GridLayout(Env.MAX_ACCAUNTINGS_NUMBET, 3));
+		listOfAccountingLabel = new JLabel(Env.LIST_OF_ACCOUNTING);
+		eastPanel.add(listOfAccountingLabel);
 		for (BunchOfButtons btn : bunchOfButtons) {
 			radioButtonsPanel.add(btn.getJRButton());
 			radioButtonsPanel.add(btn.getEdit());
 			radioButtonsPanel.add(btn.getDel());
 		}
-		eastPanel.add(radioButtonsPanel);
-		buttonsPanel = new JPanel(new GridLayout(2, 0));
 		
-		createNewButton = new JButton(Env.NEW_ACCOUNTING);		
-		createNewButton.addActionListener(actionListener);
-		buttonsPanel.add(createNewButton);
-       
-		conToExButton = new JButton(Env.CONNECT_TO_EXISTING);
-		conToExButton.addActionListener(actionListener);
-        buttonsPanel.add(conToExButton);	
-		
-		eastPanel.add(buttonsPanel);
-		
+		eastPanel.add(radioButtonsPanel, BorderLayout.CENTER);
+
+		newAccountingPanel = new JPanel();
+		newAccountingPanel.setLayout(new BoxLayout(newAccountingPanel, BoxLayout.Y_AXIS));
+
+		theNewAccountingLabel = new JLabel(Env.THE_NEW_ACCOUNTING);
+		newAccountingPanel.add(theNewAccountingLabel);
+
+		newAccountingSubPAnel = new JPanel();
+		newAccaountText = new JTextField(10);
+		newAccountingSubPAnel.add(newAccaountText);
+		currencies = new String[]{"P", "$", "€" };
+		currencieList = new JComboBox<String>(currencies);
+		currencieList.setSelectedIndex(0);
+		currencieList.setEditable(false);
+		newAccountingSubPAnel.add(currencieList);
+		newAccountingButton = new JButton(Env.CREATE);		
+		newAccountingButton.addActionListener(actionListener);
+		newAccountingSubPAnel.add(newAccountingButton);		
+
+		newAccountingPanel.add(newAccountingSubPAnel);
+
+		eastPanel.add(newAccountingPanel, BorderLayout.SOUTH);
 		add(eastPanel, BorderLayout.EAST);
 
 //SOUTH
@@ -353,14 +377,6 @@ public class MainScreen extends JPanel{
 			delAcc.addActionListener(actionListener);
 			accMenu.add(delAcc);
 
-			connectToAcc = new JMenuItem(Env.CONNECT_TO_EXISTING);
-			connectToAcc.addActionListener(actionListener);
-			accMenu.add(connectToAcc);
-
-			closeAcc = new JMenuItem("close accounting");
-			closeAcc.addActionListener(actionListener);
-			accMenu.add(closeAcc);
-
 		languages = new JMenu("languages");
 				menuButtonGroup = new ButtonGroup();
 				english = new JRadioButtonMenuItem("english");
@@ -505,7 +521,7 @@ public class MainScreen extends JPanel{
 				*/
 					break;
 				case Env.NEW_ACCOUNTING:
-				/*					
+									
 					if (accountings.size() >= Env.MAX_ACCAUNTINGS_NUMBET) {
 						JOptionPane.showMessageDialog(frame,
                                 "To mutch accountings alredy.",
@@ -513,7 +529,7 @@ public class MainScreen extends JPanel{
                                 JOptionPane.WARNING_MESSAGE);
 								break;
 					}
-					AccountingDialog newDialog = new AccountingDialog(frame, Env.NEW);
+					AccountingDialog newDialog = new AccountingDialog();
 					result = newDialog.getResultDbName();
 					if (result == null) break; //if Canceled
 					GuiLogger.info("resultDbName: " + result[3]);
@@ -522,9 +538,9 @@ public class MainScreen extends JPanel{
 						break;
 					}
 					try {							
-						env.createNewAccounting(result[0], result[1],			//(user, password,
-												result[2], result[3], result[4]);//host, dbName, 
-																				//	dbType);
+						Accounting newAccounting = new Accounting(result[0], result[1],			
+													result[2], result[3], result[4]);
+
 						textArea.append("\n" + "New currentAccounting created.");
 					} catch (ModelException me) {
 						String message = me.getMessage();
@@ -534,7 +550,7 @@ public class MainScreen extends JPanel{
 					addNewJRButton(result[3]);
 					revalidate();
 					repaint();
-				*/
+				
 					break;
 
 				case Env.NEW_ENTRY:
